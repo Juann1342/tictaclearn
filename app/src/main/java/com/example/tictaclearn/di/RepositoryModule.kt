@@ -7,16 +7,20 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-// di/RepositoryModule.kt
 
+/**
+ * Módulo Hilt que define cómo inyectar las interfaces de los repositorios a sus implementaciones.
+ *
+ * Utilizamos @Binds para enlazar la interfaz (abstract fun) con la implementación concreta
+ * (el parámetro), ya que la implementación ya tiene un constructor @Inject.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
 
-    // Le decimos a Hilt: cuando alguien pida AIEngineRepository, dale AIEngineRepositoryImpl
-    @Binds
     @Singleton
-    abstract fun bindAIEngineRepository(
+    @Binds
+    abstract fun bindAiEngineRepository(
         aiEngineRepositoryImpl: AIEngineRepositoryImpl
     ): AIEngineRepository
 }

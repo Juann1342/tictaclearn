@@ -7,20 +7,16 @@ package com.example.tictaclearn.presentation.navigation
  * para poder pasar argumentos de forma segura.
  */
 sealed class Screen(val route: String) {
-
-    // 1. Pantalla Principal / Configuración
+    // Pantalla inicial para configurar el estado de ánimo (mood) de la IA
     data object Configuration : Screen("configuration_screen")
 
-    // 2. Pantalla del Juego
-    // Esta pantalla necesita el MoodId (el estado de ánimo de la IA) como argumento
-    data class Game(val moodId: String) : Screen("game_screen/{$moodId}") {
+    // Pantalla de juego, que requiere el ID del Mood como argumento
+    // Ejemplo de ruta: "game_screen/concentrado"
+    data object Game : Screen("game_screen/{moodId}") {
+        // CORRECCIÓN: Constante para la clave del argumento, usada en el NavHost y ViewModel.
+        const val MOOD_ID_KEY = "moodId"
 
-        // Función para crear la ruta real que se usa en el NavHost
-        fun createRoute(): String = "game_screen/${moodId}"
-
-        // Constante para el nombre del argumento usado en la definición del NavHost
-        companion object {
-            const val MOOD_ID_KEY = "moodId"
-        }
+        // Función para construir la ruta real, reemplazando el placeholder
+        fun createRoute(moodId: String) = "game_screen/$moodId"
     }
 }

@@ -1,7 +1,5 @@
 package com.example.tictaclearn.presentation.game
 
-// content of presentation/game/GameUiState.kt
-
 
 import com.example.tictaclearn.domain.model.GameState
 import com.example.tictaclearn.domain.model.Mood

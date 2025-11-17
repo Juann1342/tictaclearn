@@ -12,7 +12,7 @@ import androidx.navigation.navArgument
 import com.example.tictaclearn.presentation.configuration.ConfigurationScreen
 import com.example.tictaclearn.presentation.game.GameScreen
 import com.example.tictaclearn.presentation.navigation.Screen
-
+/*
 @Composable
 fun AppNavHost(
     modifier: Modifier = Modifier
@@ -66,4 +66,4 @@ fun AppNavHost(
             )
         }
     }
-}
+}*/

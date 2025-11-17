@@ -2,49 +2,58 @@ package com.example.tictaclearn.domain.repository
 
 import com.example.tictaclearn.domain.model.Board
 import com.example.tictaclearn.domain.model.Mood
+import com.example.tictaclearn.domain.model.GameState // <--- Importación necesaria
 
-// domain/repository/AIEngineRepository.kt
-
+/**
+ * Interfaz para la lógica compleja de la IA (Q-Learning) y la gestión de su "memoria".
+ * Define el contrato que el resto de la app (UseCases, ViewModels) usará.
+ */
 interface AIEngineRepository {
 
     /**
-     * 1. Decisión de Movimiento
+     * Decide el próximo movimiento de la IA usando la estrategia Epsilon-Greedy.
      *
-     * Le pide a la IA que decida el mejor movimiento para el Board actual.
-     * La decisión debe estar influenciada por el Mood (su Epsilon, que controla la exploración vs. explotación).
-     * @param board El estado actual del tablero.
-     * @param currentMood El estado de ánimo que determina la estrategia (epsilon).
-     * @return Pair<Int, Int>? Las coordenadas (fila, columna) del movimiento elegido, o null si no hay movimientos válidos.
+     * @param board Estado actual del tablero.
+     * @param currentMood El mood actual que define la tasa de exploración (epsilon).
+     * @return El índice plano (0-8) de la celda elegida, o null si no hay movimientos.
      */
-    suspend fun getNextMove(board: Board, currentMood: Mood): Pair<Int, Int>?
+    suspend fun getNextMove(board: Board, currentMood: Mood): Int?
 
     /**
-     * 2. Aprendizaje y Actualización de Memoria
+     * Actualiza la Q-Table con la experiencia del juego terminado.
+     * (Este es el método que faltaba en la interfaz).
      *
-     * Actualiza la memoria de la IA (la tabla Q-Learning) después de que la partida finalice,
-     * para que aprenda de los resultados (victoria, derrota, empate).
-     * @param gameHistory Una lista de todos los estados del Board durante la partida.
+     * @param gameHistory Historial de estados del tablero durante el juego.
      */
     suspend fun updateMemory(gameHistory: List<Board>)
 
     /**
-     * 3. Gestión del Estado (Reseteo)
-     *
-     * Borra toda la memoria de Q-Values aprendidos por la IA.
-     */
-    suspend fun clearMemory()
-
-    /**
-     * 4. Gestión del Estado (Carga inicial)
-     * * Carga el estado de ánimo guardado para el día actual.
-     * @return Mood El estado de ánimo actual guardado (o el predeterminado si no hay ninguno).
+     * Obtiene el mood diario actual que define la estrategia de la IA.
      */
     suspend fun getDailyMood(): Mood
 
     /**
-     * 5. Gestión del Estado (Guardado)
-     * * Guarda el estado de ánimo elegido por el usuario para el día actual.
-     * @param mood El estado de ánimo seleccionado.
+     * Guarda el mood diario.
      */
     suspend fun saveDailyMood(mood: Mood)
+
+    /**
+     * Borra la Q-Table (la memoria de la IA).
+     */
+    suspend fun clearMemory()
+
+    // -----------------------------------------------------------------
+    // MÉTODOS OBSOLETOS (Reemplazados por los de arriba)
+    // Los mantenemos comentados por si AIEngineRepositoryImpl necesita
+    // ser refactorizado, pero la interfaz actual de Impl NO los usa.
+    // -----------------------------------------------------------------
+
+    // /** Carga o inicializa la memoria de la IA para un 'Mood' específico. */
+    // suspend fun loadOrInitializeMemory(moodId: String)
+
+    // /** Calcula el mejor movimiento de la IA para el estado actual del juego. */
+    // suspend fun calculateAiMove(gameState: GameState): Int
+
+    // /** Guarda la memoria (Q-Table) actual de la IA en la base de datos. */
+    // suspend fun saveMemory()
 }

@@ -35,9 +35,15 @@ data class Mood(
 
         // El estado de ánimo que se asigna por defecto cada día
         fun getDefaultDailyMood(): Mood {
-            // Aquí podríamos implementar una lógica más elaborada (ej. aleatorio)
-            // pero por ahora, lo dejamos en Normal.
             return NORMAL
+        }
+
+        /**
+         * Función de ayuda para obtener un Mood por su ID.
+         * Si el ID no se encuentra (ej. es nulo de la navegación), devuelve el Mood por defecto.
+         */
+        fun fromId(id: String): Mood {
+            return ALL_MOODS.firstOrNull { it.id == id } ?: getDefaultDailyMood()
         }
     }
 }
