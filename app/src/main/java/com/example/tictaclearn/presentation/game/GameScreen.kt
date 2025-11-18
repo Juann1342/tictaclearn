@@ -27,6 +27,7 @@ import com.example.tictaclearn.domain.model.Player
 import com.example.tictaclearn.domain.model.Board
 import com.example.tictaclearn.domain.model.Mood
 import com.example.tictaclearn.ui.theme.TicTacLearnTheme
+import com.example.tictaclearn.presentation.game.components.GameTopBar
 
 /**
  * Pantalla principal donde se juega al TicTacToe.
@@ -34,55 +35,32 @@ import com.example.tictaclearn.ui.theme.TicTacLearnTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
-    // El ID del Mood seleccionado, viene de los argumentos de navegación
     moodId: String,
-    // Acción a ejecutar cuando el juego termina y queremos volver a la configuración
-    onGameFinished: () -> Unit,
+    onGameFinished: () -> Unit, // Acción para volver al menú
     viewModel: GameViewModel = hiltViewModel()
 ) {
-    // El ViewModel se inicializa con el moodId en su constructor (SavedStateHandle)
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // Manejar la navegación de vuelta cuando el juego termina (solo si no estamos cargando)
-    if (uiState.gameState.isFinished && !uiState.isProcessingMove) {
-        onGameFinished()
-    }
 
     GameScreenContent(
         uiState = uiState,
         onCellClicked = viewModel::onCellClicked,
-        onResetGameClicked = viewModel::onResetGameClicked
+        onResetGameClicked = viewModel::onResetGameClicked,
+        onFinishGameClicked = onGameFinished // Pasamos la acción de finalizar
     )
 }
 
-// Composable principal para el contenido de la pantalla, separado para la Preview.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreenContent(
     uiState: GameUiState,
     onCellClicked: (Int) -> Unit,
-    onResetGameClicked: () -> Unit
+    onResetGameClicked: () -> Unit,
+    onFinishGameClicked: () -> Unit // Nuevo parámetro
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("TicTacLEarn") },
-                // Mostrar el Mood actual en el subtítulo si está disponible
-                // Nota: Usamos ?.let para asegurarnos de que currentMood no sea nulo.
-                // Aunque el ViewModel lo inicializa, en Composable el primer ciclo puede ser nulo.
-                actions = {
-                    uiState.currentMood?.let { mood ->
-                        Text(
-                            text = "IA: ${mood.displayName}",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(end = 16.dp)
-                        )
-                    }
-                }
-            )
+            GameTopBar(currentMood = uiState.currentMood)
         },
-        // Muestra un indicador de carga mientras la IA está "pensando"
         bottomBar = {
             if (uiState.isProcessingMove) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -95,51 +73,92 @@ fun GameScreenContent(
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween // Espacio entre el estado y el tablero
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // 1. **Estado del Juego (Mensaje)**
+            // 1. Estado del Juego
             GameStatusMessage(uiState.gameState)
 
-            // Espaciador para separar el mensaje del tablero
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. **Tablero de Juego**
+            // 2. Tablero
             BoardGrid(
                 board = uiState.gameState.board,
-                // El tablero solo es interactivo si no está terminado y es el turno del HUMANO
                 isInteractive = !uiState.gameState.isFinished &&
                         uiState.gameState.currentPlayer == Player.Human &&
                         !uiState.isProcessingMove,
                 onCellClicked = onCellClicked
             )
 
-            // Espaciador para separar el tablero del botón
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. **Botón de Reiniciar**
-            Button(
-                onClick = onResetGameClicked,
-                enabled = !uiState.isProcessingMove // Deshabilitado mientras se procesa un movimiento
+            // 3. **CONTROLES DE JUEGO (Dinámicos)**
+            // Usamos un Box para mantener el espacio y que los botones no "salten" demasiado
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp), // Altura fija para la zona de botones
+                contentAlignment = Alignment.Center
             ) {
-                Text("🔄 Reiniciar Partida")
+                if (uiState.gameState.isFinished) {
+                    // **CASO A: Juego Terminado -> Mostrar opciones de fin**
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Botón de Finalizar (Volver)
+                        OutlinedButton(
+                            onClick = onFinishGameClicked,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("🏁 Finalizar")
+                        }
+
+                        // Botón de Jugar de Nuevo (Reiniciar)
+                        Button(
+                            onClick = onResetGameClicked,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("🔄 Otra vez")
+                        }
+                    }
+                } else {
+                    // **CASO B: Juego en Curso -> Botón de Reiniciar (Opcional)**
+                    // Si quieres permitir reiniciar a mitad de partida, descomenta esto.
+                    // Si prefieres que esté oculto hasta terminar, deja el Box vacío o pon un texto.
+
+                    /* OutlinedButton(
+                        onClick = onResetGameClicked,
+                        enabled = !uiState.isProcessingMove
+                    ) {
+                        Text("Reiniciar Partida")
+                    }
+                    */
+
+                    // Opción alternativa: Texto de ayuda
+                    if (!uiState.isProcessingMove) {
+                        Text(
+                            text = "Toca una casilla para jugar",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                }
             }
 
-            // 4. **Mensaje de Error/Feedback (si lo hay)**
+            // 4. Mensajes de Error
             uiState.errorMessage?.let { message ->
                 Text(
                     text = message,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 16.dp)
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
     }
 }
 
-/**
- * Muestra el mensaje de estado (Turno, Victoria, Empate).
- */
+// --- Componentes Auxiliares (Sin cambios mayores) ---
+
 @Composable
 fun GameStatusMessage(gameState: GameState) {
     val text = when (val result = gameState.result) {
@@ -160,9 +179,6 @@ fun GameStatusMessage(gameState: GameState) {
     )
 }
 
-/**
- * El tablero de 3x3 para el juego.
- */
 @Composable
 fun BoardGrid(
     board: Board,
@@ -171,10 +187,8 @@ fun BoardGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        modifier = Modifier
-            .aspectRatio(1f), // Esto asegura que sea un cuadrado perfecto
-                // .width(IntrinsicSize.Max), // ❌ ELIMINADO: Esta línea causaba el crash con LazyVerticalGrid
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.aspectRatio(1f),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         itemsIndexed(board.cells) { index, cell ->
@@ -187,9 +201,6 @@ fun BoardGrid(
     }
 }
 
-/**
- * Representa una sola celda del tablero.
- */
 @Composable
 fun BoardCell(
     symbol: Char,
@@ -210,14 +221,13 @@ fun BoardCell(
             .clickable(enabled = isEnabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        // Estilo del símbolo (X u O)
         Text(
             text = symbol.toString().trim(),
             fontSize = 60.sp,
             fontWeight = FontWeight.Black,
             color = when (symbol) {
-                'X' -> MaterialTheme.colorScheme.primary // Jugador Humano
-                'O' -> MaterialTheme.colorScheme.error // IA
+                'X' -> MaterialTheme.colorScheme.primary
+                'O' -> MaterialTheme.colorScheme.error
                 else -> Color.Transparent
             }
         )
@@ -226,57 +236,20 @@ fun BoardCell(
 
 @Preview(showBackground = true)
 @Composable
-fun GameScreenPreview() {
-    val sampleBoard = Board(cells = listOf('X', 'O', ' ', 'O', 'X', ' ', ' ', ' ', ' '))
-
-    // **CORRECCIÓN: Se añade el parámetro 'result' que faltaba.**
-    val sampleGameState = GameState(
-        board = sampleBoard,
-        currentPlayer = Player.AI,
-        result = GameResult.Playing, // <-- AÑADIDO: El juego está en curso
-        gameHistory = listOf(sampleBoard)
-    )
-
-    // El estado de ánimo es necesario para la TopAppBar, aunque solo sea un mock.
-    val mockMood = Mood.NORMAL
-
-    TicTacLearnTheme {
-        GameScreenContent(
-            uiState = GameUiState(
-                gameState = sampleGameState,
-                currentMood = mockMood,
-                isProcessingMove = true // Simular que la IA está pensando
-            ),
-            onCellClicked = { },
-            onResetGameClicked = { }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GameScreenWinPreview() {
+fun GameScreenFinishedPreview() {
     val winBoard = Board(cells = listOf('X', 'X', 'X', 'O', 'O', ' ', ' ', ' ', ' '))
     val winState = GameState(
         board = winBoard,
         currentPlayer = Player.AI,
         result = GameResult.Win(Player.Human, listOf(0, 1, 2)),
-        // CORRECCIÓN: También incluimos el tablero final en el historial de esta preview.
         gameHistory = listOf(winBoard)
     )
-
-    // El estado de ánimo es necesario para la TopAppBar, aunque solo sea un mock.
-    val mockMood = Mood.NORMAL
-
     TicTacLearnTheme {
         GameScreenContent(
-            uiState = GameUiState(
-                gameState = winState,
-                currentMood = mockMood,
-                isProcessingMove = false
-            ),
-            onCellClicked = { },
-            onResetGameClicked = { }
+            uiState = GameUiState(gameState = winState, currentMood = Mood.NORMAL, isProcessingMove = false),
+            onCellClicked = {},
+            onResetGameClicked = {},
+            onFinishGameClicked = {}
         )
     }
 }

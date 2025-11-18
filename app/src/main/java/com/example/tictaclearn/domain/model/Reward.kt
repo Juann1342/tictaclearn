@@ -3,16 +3,15 @@ package com.example.tictaclearn.domain.model
 
 /**
  * Recompensas usadas en Q-Learning para evaluar el resultado de un movimiento o partida.
- * Estos valores definen el "aprendizaje" de la IA: una victoria tiene una recompensa alta,
- * una derrota, una penalización.
+ * Aumentamos la magnitud para acelerar el aprendizaje.
  */
 object Reward {
-    // Recompensa por ganar la partida
-    const val WIN = 10.0
-    // Recompensa por empatar
-    const val TIE = 0.5
-    // Penalización por perder la partida
-    const val LOSE = -10.0
+    // Recompensa por ganar la partida: Aumentada de 10.0 a 50.0
+    const val WIN = 50.0
+    // Recompensa por empatar: Mantenida, pero menor que la ganancia.
+    const val TIE = 1.0
+    // Penalización por perder la partida: Aumentada de -10.0 a -50.0
+    const val LOSE = -50.0
     // Recompensa por un estado intermedio (mientras el juego está en curso)
     const val DEFAULT = 0.0
 

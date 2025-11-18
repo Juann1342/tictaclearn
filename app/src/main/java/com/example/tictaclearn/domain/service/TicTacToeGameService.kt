@@ -1,143 +1,82 @@
 package com.example.tictaclearn.domain.service
 
-import com.example.tictaclearn.data.datastore.AiMemoryDataStoreManager
-import com.example.tictaclearn.domain.ai.TicTacToeQAgent
 import com.example.tictaclearn.domain.model.GameState
 import com.example.tictaclearn.domain.model.Mood
 import com.example.tictaclearn.domain.model.Player
-import com.example.tictaclearn.domain.model.Reward
+import com.example.tictaclearn.domain.repository.AIEngineRepository // Usamos la interfaz del repo
+import com.example.tictaclearn.domain.model.Board
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Clase Singleton responsable de la lógica del juego (tablero) y la orquestación
- * entre el Agente de IA y el DataStore de memoria.
+ * Servicio responsable de la lógica del juego.
+ * Ahora DELEGA la inteligencia al AIEngineRepository para asegurar que
+ * siempre se use la memoria actualizada.
  */
 @Singleton
 class TicTacToeGameService @Inject constructor(
-    private val memoryManager: AiMemoryDataStoreManager
+    private val aiEngineRepository: AIEngineRepository // Inyectamos el Repositorio
 ) {
-    private var qAgent: TicTacToeQAgent? = null
-
-    // CORRECCIÓN 1: Inicialización con el estado inicial estático.
+    // Estado actual del juego
     var gameState: GameState = GameState.initial()
         private set
 
-    private var lastAiState: String? = null
-    private var lastAiAction: Int? = null
+    // Estado de ánimo actual
+    var currentMood: Mood? = null
+        private set
 
     /**
-     * Inicializa el servicio cargando la memoria (Q-Table) y configurando el agente de IA.
-     * @param moodId El ID del estado de ánimo (ej: "concentrado").
+     * Inicializa el juego cargando el mood.
      */
     suspend fun initializeGame(moodId: String) {
-        val mood = Mood.ALL_MOODS.firstOrNull { it.id == moodId } ?: Mood.getDefaultDailyMood()
-        val qTable = memoryManager.getQTable()
+        // Obtenemos el mood (o el diario si falla)
+        val mood = Mood.fromId(moodId) ?: aiEngineRepository.getDailyMood()
+        currentMood = mood
 
-        qAgent = TicTacToeQAgent(
-            qTable = qTable,
-            mood = mood
-        )
-
-        // CORRECCIÓN 2: Iniciar un nuevo GameState usando el companion object.
-        gameState = GameState.initial()
-        lastAiState = null
-        lastAiAction = null
+        // Reiniciamos el tablero
+        resetGame()
     }
 
     /**
-     * Ejecuta el turno del jugador humano.
-     * @param position Índice de la celda (0-8).
-     * @return El GameState actualizado.
+     * Maneja el movimiento del humano.
      */
     fun handleHumanTurn(position: Int): GameState {
-        // Usar la función de Board para verificar
-        if (gameState.board.isPositionAvailable(position)) {
+        // Validar movimiento
+        if (gameState.board.isPositionAvailable(position) && !gameState.isFinished) {
             gameState = gameState.move(position, Player.Human)
         }
-
-        // Usar la propiedad computada isFinished (la lógica de guardado va en el ViewModel)
-        if (gameState.isFinished) {
-            clearLearningState()
-        }
-
         return gameState
     }
 
     /**
-     * Ejecuta el turno de la IA y actualiza su memoria.
-     * @return El GameState actualizado.
+     * Maneja el turno de la IA preguntando al Repositorio.
      */
     suspend fun handleAiTurn(): GameState {
-        val agent = qAgent ?: throw IllegalStateException("Agent not initialized")
-
-        // 1. **APRENDIZAJE DIFERIDO (Actualización del movimiento anterior de la IA)**
-        if (lastAiState != null && lastAiAction != null) {
-            // La recompensa se basa en el GameResult actual
-            val reward = Reward.getReward(gameState.result, Player.AI)
-            agent.updateQValue(
-                prevState = lastAiState!!,
-                action = lastAiAction!!,
-                reward = reward,
-                newState = gameState.board.toStateString() // Usar la función de Board
-            )
+        if (gameState.isFinished || gameState.currentPlayer != Player.AI) {
+            return gameState
         }
 
-        // 2. **MOVIMIENTO DE LA IA**
-        if (!gameState.isFinished) {
-            val prevState = gameState.board.toStateString()
-            val possibleActions = gameState.board.getAvailablePositions()
+        // 1. PREGUNTAR AL CEREBRO CENTRAL (Repositorio)
+        // Esto usa la Q-Table más actual y la lógica de Epsilon-Greedy
+        val moveIndex = aiEngineRepository.getNextMove(
+            board = gameState.board,
+            currentMood = currentMood ?: Mood.getDefaultDailyMood()
+        )
 
-            val action = agent.selectAction(prevState, possibleActions)
-
-            if (action != -1) {
-                gameState = gameState.move(action, Player.AI)
-
-                // 3. **GUARDAR PARA PRÓXIMO APRENDIZAJE**
-                lastAiState = prevState
-                lastAiAction = action
-            }
-
-            // 4. Verificar si el juego terminó (victoria IA o empate).
-            if (gameState.isFinished) {
-                // Aplicar el aprendizaje diferido una última vez con la recompensa final.
-                val finalReward = Reward.getReward(gameState.result, Player.AI)
-                agent.updateQValue(
-                    prevState = lastAiState!!,
-                    action = lastAiAction!!,
-                    reward = finalReward,
-                    newState = gameState.board.toStateString()
-                )
-                clearLearningState()
-            }
+        // 2. Ejecutar el movimiento si el repositorio devolvió uno válido
+        if (moveIndex != null && gameState.board.isPositionAvailable(moveIndex)) {
+            gameState = gameState.move(moveIndex, Player.AI)
         }
 
         return gameState
     }
 
     /**
-     * Guarda la Q-Table de la IA en el DataStore (Llamado desde el ViewModel).
-     */
-    suspend fun saveAiMemory() {
-        val finalQTable = qAgent?.getCurrentQTable() ?: return
-        memoryManager.saveQTable(finalQTable)
-        clearLearningState()
-    }
-
-    /**
-     * Limpia las variables de estado necesarias para el aprendizaje diferido.
-     */
-    private fun clearLearningState() {
-        lastAiState = null
-        lastAiAction = null
-    }
-
-    /**
-     * Reinicia el estado del juego (tablero) sin afectar la memoria de la IA.
+     * Reinicia solo el tablero. La memoria reside en el repositorio, así que no hay que recargarla.
      */
     fun resetGame() {
-        // CORRECCIÓN 3: Resetear el GameState usando el companion object.
         gameState = GameState.initial()
-        clearLearningState()
     }
+
+    // Eliminamos saveAiMemory() porque la responsabilidad ahora es del ViewModel -> Repository
 }

@@ -98,7 +98,7 @@ class TicTacToeQAgent(
         val oldQValue = oldQValues[action]
 
         // 2. Calcular max(Q(s', a')) (El mejor valor Q futuro)
-        val maxFutureQ = getMaxQForState(newState)
+        val maxFutureQ = getMaxQForState(newState) // Usamos la versión pública
 
         // 3. Aplicar la fórmula Q-Learning
         val newQValue = oldQValue + learningRate * (reward + discountFactor * maxFutureQ - oldQValue)
@@ -115,8 +115,9 @@ class TicTacToeQAgent(
 
     /**
      * Calcula el máximo valor Q para un estado dado (max(Q(s', a'))).
+     * 💡 CAMBIO: Hacemos esta función pública para que TicTacToeGameService la use en saveAiMemory.
      */
-    private fun getMaxQForState(state: String): Double {
+    fun getMaxQForState(state: String): Double {
         // Si el estado no está en la tabla, lo inicializamos y el max Q es 0.0
         val qValues = qTable[state] ?: initializeState(state)
         return qValues.maxOrNull() ?: 0.0

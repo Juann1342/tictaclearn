@@ -1,47 +1,58 @@
 package com.example.tictaclearn.domain.model
 
-// domain/model/Mood.kt
-
 data class Mood(
-    val id: String,         // Identificador único (ej: "somnoliento", "concentrado")
-    val displayName: String,// Texto amigable para la UI (ej: " Somnoliento")
-    val description: String,// Descripción del ánimo
-    val epsilon: Double     // El parámetro ϵ (0.0 a 1.0) para el Q-Learning
+    val id: String,
+    val displayName: String,
+    val description: String,
+    val epsilon: Double // Probabilidad de movimiento aleatorio (0.0 a 1.0)
 ) {
     companion object {
-        // Configuramos los estados de ánimo predefinidos y sus valores de Epsilon
+        // NIVEL 1: Muy fácil
         val SOMNOLIENTO = Mood(
             id = "somnoliento",
             displayName = "😴 Somnoliento",
-            description = "Juega muy aleatorio. Será fácil ganar.",
-            epsilon = 0.7 // Alta probabilidad de exploración/movimientos tontos
+            description = "Juega casi al azar. Ideal para aprender.",
+            epsilon = 0.8
         )
 
+        // NIVEL 2: Fácil
+        val RELAJADO = Mood(
+            id = "relajado",
+            displayName = "🙂 Relajado",
+            description = "Comete errores frecuentes, pero intenta jugar.",
+            epsilon = 0.5
+        )
+
+        // NIVEL 3: Intermedio
         val NORMAL = Mood(
             id = "normal",
             displayName = "😐 Normal",
-            description = "Aprende y mejora con cada partida.",
-            epsilon = 0.3 // Equilibrio entre exploración y explotación
+            description = "Un reto equilibrado. A veces se despista.",
+            epsilon = 0.2
         )
 
+        // NIVEL 4: Difícil
+        val ATENTO = Mood(
+            id = "atento",
+            displayName = "🧐 Atento",
+            description = "Juega serio. Rara vez comete errores simples.",
+            epsilon = 0.05
+        )
+
+        // NIVEL 5: Experto
         val CONCENTRADO = Mood(
             id = "concentrado",
             displayName = "🧠 Concentrado",
-            description = "Juega casi óptimamente, usando su memoria al máximo.",
-            epsilon = 0.05 // Muy baja probabilidad de movimientos tontos
+            description = "Invencible. Usa todo su potencial.",
+            epsilon = 0.0
         )
 
-        val ALL_MOODS = listOf(SOMNOLIENTO, NORMAL, CONCENTRADO)
+        val ALL_MOODS = listOf(SOMNOLIENTO, RELAJADO, NORMAL, ATENTO, CONCENTRADO)
 
-        // El estado de ánimo que se asigna por defecto cada día
         fun getDefaultDailyMood(): Mood {
             return NORMAL
         }
 
-        /**
-         * Función de ayuda para obtener un Mood por su ID.
-         * Si el ID no se encuentra (ej. es nulo de la navegación), devuelve el Mood por defecto.
-         */
         fun fromId(id: String): Mood {
             return ALL_MOODS.firstOrNull { it.id == id } ?: getDefaultDailyMood()
         }

@@ -19,17 +19,12 @@ import com.example.tictaclearn.presentation.navigation.Screen
 import com.example.tictaclearn.ui.theme.TicTacLearnTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-/**
- * Actividad principal y punto de entrada de la aplicación.
- * Contiene el tema de la aplicación y el NavHost (gráfico de navegación).
- */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             TicTacLearnTheme {
-                // Una superficie contenedora que utiliza el color de fondo del tema
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -41,27 +36,22 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Define el NavHost de la aplicación y las transiciones entre pantallas.
- */
 @Composable
 fun TicTacToeNavHost() {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Configuration.route // La pantalla inicial
+        startDestination = Screen.Configuration.route
     ) {
         // --- 1. Pantalla de Configuración ---
         composable(Screen.Configuration.route) {
             ConfigurationScreen(
                 onStartGame = { moodId ->
-                    // Navega a la pantalla de juego, pasando el moodId
-                    navController.navigate(Screen.Game.createRoute(moodId)) {
-                        // Limpiamos la pila para que no se pueda volver atrás a la configuración
-                        // sin querer durante la partida.
-                        popUpTo(Screen.Configuration.route) { inclusive = true }
-                    }
+                    // 🔄 CORRECCIÓN CRÍTICA: Navegación simple.
+                    // Hemos eliminado el bloque 'popUpTo' que borraba la historia.
+                    // Ahora, al entrar al juego, la Configuración se queda en la pila ("atrás").
+                    navController.navigate(Screen.Game.createRoute(moodId))
                 }
             )
         }
@@ -73,14 +63,12 @@ fun TicTacToeNavHost() {
                 navArgument("moodId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            // CORRECCIÓN: Obtener el moodId del argumento de navegación.
-            val moodId = backStackEntry.arguments?.getString("moodId")
-                ?: throw IllegalStateException("moodId debe ser un argumento de navegación.")
+            val moodId = backStackEntry.arguments?.getString("moodId") ?: ""
 
-            // CORRECCIÓN: Llamar a GameScreen con los argumentos requeridos.
             GameScreen(
                 moodId = moodId,
-                onGameFinished = { navController.popBackStack() } // Al terminar, volvemos atrás
+                // Ahora 'popBackStack' funcionará porque hay algo a lo que volver
+                onGameFinished = { navController.popBackStack() }
             )
         }
     }
