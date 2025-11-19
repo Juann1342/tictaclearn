@@ -1,76 +1,81 @@
 package com.example.tictaclearn.presentation.game.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.tictaclearn.domain.model.Board // Importamos Board
-
-// Ya no necesitamos importar Cell, ya que usamos 'Char' directamente ('X', 'O', ' ')
+import androidx.compose.ui.unit.sp
+import com.example.tictaclearn.domain.model.Board
 
 @Composable
 fun GameBoard(
     board: Board,
-    onCellClicked: (Int) -> Unit, // ❌ CAMBIO: Ahora recibe solo el índice plano (0-8)
-    isProcessing: Boolean // Para deshabilitar la interacción
+    onCellClicked: (Int) -> Unit,
+    isProcessing: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    // Usamos Column y Row para simular el grid
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Itera sobre las filas (0, 1, 2)
-        (0..2).forEach { rowIndex ->
-            Row {
-                // Itera sobre las columnas (0, 1, 2)
-                (0..2).forEach { colIndex ->
-                    val position = rowIndex * 3 + colIndex // Calcula el índice plano (0-8)
-                    val cellContent = board.cells[position] // Obtiene el contenido de la celda
+    // Usamos el sideSize del tablero (3 o 9) para definir las columnas
+    val columns = board.sideSize
 
-                    BoardCell(
-                        cellContent = cellContent,
-                        onClick = {
-                            // Solo permite el click si NO está en proceso y la celda está vacía (' ')
-                            if (!isProcessing && cellContent == ' ') {
-                                onCellClicked(position) // Pasa el índice plano
-                            }
-                        }
-                    )
-                }
-            }
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columns),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp), // Un poco de margen general
+        userScrollEnabled = false // Evitamos scroll interno, que encaje en pantalla
+    ) {
+        items(board.cells.size) { index ->
+            BoardCell(
+                cellContent = board.cells[index],
+                onClick = {
+                    if (!isProcessing && board.cells[index] == ' ') {
+                        onCellClicked(index)
+                    }
+                },
+                // Ajustamos el tamaño de fuente dinámicamente: más chico si es 9x9
+                fontSize = if (columns > 3) 20 else 60
+            )
         }
     }
 }
 
 @Composable
-fun BoardCell(cellContent: Char, onClick: () -> Unit) {
-    // Usamos el `clickable` con un modificador para asegurar que toda la superficie sea clickable
+fun BoardCell(
+    cellContent: Char,
+    onClick: () -> Unit,
+    fontSize: Int
+) {
     Box(
         modifier = Modifier
-            .size(100.dp) // Tamaño de la celda ligeramente más grande para mejor tap target
-            .border(2.dp, MaterialTheme.colorScheme.primary) // Borde más grueso y colorido
+            .aspectRatio(1f) // 🔥 CLAVE: Esto fuerza a que sea perfectamente cuadrado
+            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)) // Borde sutil
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        val text = if (cellContent == ' ') "" else cellContent.toString()
-
-        Text(
-            text = text,
-            style = MaterialTheme.typography.displayLarge, // Fuente más grande
-            color = when (cellContent) {
-                // 'X' (Humano) y 'O' (IA) reciben colores distintivos
-                'X' -> MaterialTheme.colorScheme.primary
-                'O' -> MaterialTheme.colorScheme.secondary
-                else -> MaterialTheme.colorScheme.onSurface
-            }
-        )
+        if (cellContent != ' ') {
+            Text(
+                text = cellContent.toString(),
+                fontSize = fontSize.sp,
+                fontWeight = FontWeight.Bold,
+                color = when (cellContent) {
+                    'X' -> MaterialTheme.colorScheme.primary
+                    'O' -> MaterialTheme.colorScheme.secondary
+                    else -> Color.Unspecified
+                }
+            )
+        }
     }
 }

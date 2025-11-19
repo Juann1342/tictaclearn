@@ -31,147 +31,236 @@ class AIEngineRepositoryImpl @Inject constructor(
     private var qTable: QTable = emptyMap()
 
     private companion object {
-        const val LEARNING_RATE_ALPHA = 0.5
+        const val LEARNING_RATE_ALPHA = 0.1
         const val DISCOUNT_FACTOR_GAMMA = 0.9
-        const val BOARD_SIZE = 9
-    }
-
-    // --- Helper functions omitidas para brevedad (son las mismas de antes) ---
-    private fun boardToState(board: Board): String = board.toStateString()
-
-    private fun findLastAIMove(previousBoard: Board, currentBoard: Board): Int? {
-        val aiSymbol = Player.AI.symbol
-        for (i in 0 until BOARD_SIZE) {
-            if (previousBoard.cells[i] == ' ' && currentBoard.cells[i] == aiSymbol) return i
-        }
-        return null
-    }
-
-    private fun getHeuristicQValues(state: String): List<Double> {
-        val qValues = MutableList(BOARD_SIZE) { 0.0 }
-        val center = 4
-        val corners = listOf(0, 2, 6, 8)
-        val edges = listOf(1, 3, 5, 7)
-        for (i in 0 until BOARD_SIZE) {
-            val cellChar = state.getOrElse(i) { ' ' }
-            val isEmpty = cellChar != Player.Human.symbol && cellChar != Player.AI.symbol
-            if (isEmpty) {
-                qValues[i] = when (i) {
-                    center -> 0.5
-                    in corners -> 0.2
-                    in edges -> 0.1
-                    else -> 0.0
-                }
-            } else {
-                qValues[i] = -1.0
-            }
-        }
-        return qValues
-    }
-
-    // 🔄 CAMBIO PRINCIPAL AQUÍ
-    override suspend fun getDailyMood(): Mood {
-        // 1. Antes de devolver nada, verificamos si cambiamos de día.
-        // Si es un nuevo día, esta función actualizará el Mood guardado en el DataStore.
-        moodDataStoreManager.updateDailyMoodSequenceIfNeeded()
-
-        // 2. Ahora recuperamos el Mood actual (ya sea el nuevo del día o el que estaba)
-        val moodId = moodDataStoreManager.getMoodId()
-        return Mood.fromId(moodId)
-    }
-
-    override suspend fun saveDailyMood(mood: Mood) {
-        moodDataStoreManager.saveMoodId(mood.id)
     }
 
     override suspend fun getNextMove(board: Board, currentMood: Mood): Int? {
         mutex.withLock {
-            if (qTable.isEmpty()) { qTable = aiMemoryDataStoreManager.getQTable() }
-        }
-
-        val emptyActions = board.getAvailablePositions()
-        if (emptyActions.isEmpty()) return null
-
-        // Reglas de supervivencia (desactivadas para niveles bajos)
-        val useInstincts = currentMood.id != Mood.SOMNOLIENTO.id && currentMood.id != Mood.RELAJADO.id
-
-        if (useInstincts) {
-            val winningMove = board.findWinningMove(Player.AI.symbol)
-            if (winningMove != null) return winningMove
-            val blockingMove = board.findWinningMove(Player.Human.symbol)
-            if (blockingMove != null) return blockingMove
-        }
-
-        // Memoria + Heurística
-        val state = boardToState(board)
-        val qValues = qTable[state] ?: getHeuristicQValues(state)
-
-        if (random.nextDouble() < currentMood.epsilon) {
-            return emptyActions.randomOrNull()
-        } else {
-            val maxQ = qValues.maxOrNull() ?: 0.0
-            val bestActions = emptyActions.filter { actionIndex ->
-                abs(qValues[actionIndex] - maxQ) < 0.0001
+            if (qTable.isEmpty()) {
+                qTable = aiMemoryDataStoreManager.getQTable()
             }
-            return bestActions.randomOrNull() ?: emptyActions.randomOrNull()
         }
+
+        val availableMoves = board.getAvailablePositions()
+        if (availableMoves.isEmpty()) return null
+
+        // 1. APERTURA NATURAL PARA GOMOKU
+        // Si el tablero está vacío o tiene muy pocas fichas, jugamos cerca del centro pero con variedad.
+        if (board.sideSize > 3 && board.cells.count { it != ' ' } < 2) {
+            // Filtramos movimientos que estén en el cuadro central de 3x3 o 5x5
+            val centerRange = (board.sideSize / 2 - 2)..(board.sideSize / 2 + 2)
+            val centerMoves = availableMoves.filter {
+                val row = it / board.sideSize
+                val col = it % board.sideSize
+                row in centerRange && col in centerRange
+            }
+            if (centerMoves.isNotEmpty()) return centerMoves.random()
+        }
+
+        // 2. Exploración (Aleatorio según Mood)
+        if (random.nextDouble() < currentMood.epsilon) {
+            return availableMoves.random()
+        }
+
+        // 3. Explotación (Memoria + Instinto)
+        val stateKey = board.toStateString()
+        // Si no hay memoria previa, usamos la heurística avanzada
+        val qValues = qTable[stateKey] ?: getHeuristicQValues(board)
+
+        var bestMoves = mutableListOf<Int>()
+        var maxQ = -Double.MAX_VALUE
+
+        for (moveIndex in availableMoves) {
+            val qVal = if (moveIndex < qValues.size) qValues[moveIndex] else 0.0
+
+            if (qVal > maxQ) {
+                maxQ = qVal
+                bestMoves.clear()
+                bestMoves.add(moveIndex)
+            } else if (qVal == maxQ) {
+                bestMoves.add(moveIndex)
+            }
+        }
+
+        return bestMoves.ifEmpty { availableMoves }.random()
+    }
+
+    /**
+     * Calcula valores base. Distingue entre TicTacToe (simple) y Gomoku (complejo).
+     */
+    private fun getHeuristicQValues(board: Board): List<Double> {
+        val size = board.sideSize
+
+        // Lógica Tic-Tac-Toe (Simple)
+        if (size == 3) {
+            return getTicTacToeHeuristics(board)
+        }
+
+        // Lógica Gomoku (Avanzada - Detección de Patrones)
+        return getGomokuHeuristics(board)
+    }
+
+    /**
+     * 🧠 CEREBRO GOMOKU
+     * Analiza líneas, diagonales y patrones abiertos/cerrados.
+     */
+    private fun getGomokuHeuristics(board: Board): List<Double> {
+        val size = board.sideSize
+        val heuristics = MutableList(board.cells.size) { 0.0 }
+        val availableMoves = board.getAvailablePositions()
+
+        for (pos in availableMoves) {
+            // Simulamos poner nuestra ficha (Ataque)
+            val attackScore = evaluatePositionScore(board, pos, Player.AI)
+
+            // Simulamos que el oponente pone su ficha ahí (Defensa)
+            // Multiplicamos por un factor (ej. 1.2) si queremos priorizar defensa sobre ataque
+            val defenseScore = evaluatePositionScore(board, pos, Player.Human) * 1.2
+
+            // La puntuación final es una mezcla.
+            // Si bloquear al humano da 10,000 puntos, eso dominará la decisión.
+            heuristics[pos] = attackScore + defenseScore
+        }
+        return heuristics
+    }
+
+    /**
+     * Evalúa qué tan peligrosa o buena es una posición buscando patrones de líneas.
+     */
+    private fun evaluatePositionScore(board: Board, pos: Int, player: Player): Double {
+        val size = board.sideSize
+        val row = pos / size
+        val col = pos % size
+        val symbol = player.symbol
+
+        var totalScore = 0.0
+
+        // Direcciones: Horizontal, Vertical, Diagonal \, Diagonal /
+        val directions = listOf(0 to 1, 1 to 0, 1 to 1, 1 to -1)
+
+        for ((dr, dc) in directions) {
+            // Contamos fichas consecutivas y espacios libres en los extremos
+            var consecutive = 0
+            var openEnds = 0
+
+            // Hacia adelante
+            var r = row + dr
+            var c = col + dc
+            while (r in 0 until size && c in 0 until size && board.cells[r * size + c] == symbol) {
+                consecutive++
+                r += dr
+                c += dc
+            }
+            if (r in 0 until size && c in 0 until size && board.cells[r * size + c] == ' ') {
+                openEnds++
+            }
+
+            // Hacia atrás
+            r = row - dr
+            c = col - dc
+            while (r in 0 until size && c in 0 until size && board.cells[r * size + c] == symbol) {
+                consecutive++
+                r -= dr
+                c -= dc
+            }
+            if (r in 0 until size && c in 0 until size && board.cells[r * size + c] == ' ') {
+                openEnds++
+            }
+
+            // --- SISTEMA DE PUNTUACIÓN DE PATRONES ---
+            // La ficha que acabamos de poner cuenta como 1, así que consecutive + 1
+            val currentLength = consecutive + 1
+
+            if (currentLength >= 5) {
+                totalScore += 100_000.0 // ¡Victoria o Bloqueo de Victoria!
+            } else if (currentLength == 4) {
+                if (openEnds > 0) totalScore += 10_000.0 // 4 con espacio (Imparable)
+                else totalScore += 5_000.0 // 4 cerrado (Hay que bloquear ya)
+            } else if (currentLength == 3) {
+                if (openEnds == 2) totalScore += 3_000.0 // 3 Abierto (Muy peligroso: _XXX_)
+                else if (openEnds == 1) totalScore += 100.0 // 3 Cerrado (Poco peligroso)
+            } else if (currentLength == 2) {
+                if (openEnds == 2) totalScore += 50.0 // 2 Abierto
+            }
+        }
+
+        // Factor posicional leve: Preferir el centro si no hay amenazas
+        val center = size / 2.0
+        val dist = abs(row - center) + abs(col - center)
+        totalScore += (20.0 - dist) // Pequeño empujón hacia el centro
+
+        return totalScore
+    }
+
+    private fun getTicTacToeHeuristics(board: Board): List<Double> {
+        val heuristics = MutableList(board.cells.size) { 0.01 }
+        val availableMoves = board.getAvailablePositions()
+
+        // ... (Lógica TicTacToe simplificada para ahorrar espacio,
+        // se basa en Win/Block/Center como antes)
+        for (pos in availableMoves) {
+            if (canWinNextMove(board, pos, Player.AI, 3)) heuristics[pos] += 100.0
+            else if (canWinNextMove(board, pos, Player.Human, 3)) heuristics[pos] += 50.0
+            else if (pos == 4) heuristics[pos] += 5.0
+        }
+        return heuristics
+    }
+
+    private fun canWinNextMove(board: Board, position: Int, player: Player, winLength: Int): Boolean {
+        val simulated = board.simulateMove(position, player.symbol)
+        val result = simulated.checkGameResult(winLength)
+        return result is GameResult.Win && result.winner == player
     }
 
     override suspend fun updateMemory(gameHistory: List<Board>) {
         mutex.withLock {
-            if (gameHistory.size < 2) return
-
-            qTable = aiMemoryDataStoreManager.getQTable()
+            if (qTable.isEmpty()) qTable = aiMemoryDataStoreManager.getQTable()
             val currentQTable = qTable.toMutableMap()
             var learningEvents = 0
 
-            for (i in gameHistory.size - 2 downTo 0) {
-                val stateBeforeAiMove = gameHistory[i]
-                val stateAfterAiMove = gameHistory[i + 1]
-                val actionIndex = findLastAIMove(stateBeforeAiMove, stateAfterAiMove) ?: continue
+            for (i in 0 until gameHistory.size - 1) {
+                val state = gameHistory[i]
+                val nextState = gameHistory[i + 1]
+                val actionIndex = findDiffIndex(state, nextState)
+                if (actionIndex == -1 || nextState.cells[actionIndex] != Player.AI.symbol) continue
 
-                val stateKey = boardToState(stateBeforeAiMove)
+                val stateKey = state.toStateString()
+                val winLength = if (state.sideSize > 3) 5 else 3
+
                 var reward = 0.0
                 var maxFutureQ = 0.0
+                val result = nextState.checkGameResult(winLength)
 
-                val resultImmediate = stateAfterAiMove.checkGameResult()
-
-                if (resultImmediate is GameResult.Win && resultImmediate.winner == Player.AI) {
-                    reward = Reward.WIN
-                    maxFutureQ = 0.0
-                } else if (resultImmediate is GameResult.Draw) {
-                    reward = Reward.TIE
-                    maxFutureQ = 0.0
-                } else {
+                if (result is GameResult.Win && result.winner == Player.AI) reward = Reward.WIN
+                else if (result is GameResult.Draw) reward = Reward.TIE
+                else {
                     if (i + 2 < gameHistory.size) {
-                        val stateAfterHumanMove = gameHistory[i + 2]
-                        val resultAfterHuman = stateAfterHumanMove.checkGameResult()
-
-                        if (resultAfterHuman is GameResult.Win && resultAfterHuman.winner == Player.Human) {
-                            reward = Reward.LOSE
-                            maxFutureQ = 0.0
-                        } else if (resultAfterHuman is GameResult.Draw) {
-                            reward = Reward.TIE
-                        } else {
-                            val nextAiStateKey = boardToState(stateAfterHumanMove)
-                            val nextQValues = currentQTable[nextAiStateKey] ?: getHeuristicQValues(nextAiStateKey)
-                            maxFutureQ = nextQValues.maxOrNull() ?: 0.0
+                        val stateAfterHuman = gameHistory[i + 2]
+                        val resultHuman = stateAfterHuman.checkGameResult(winLength)
+                        if (resultHuman is GameResult.Win && resultHuman.winner == Player.Human) reward = Reward.LOSE
+                        else {
+                            val nextKey = stateAfterHuman.toStateString()
+                            // Usamos el heurístico actualizado para predecir valor futuro
+                            val nextQ = currentQTable[nextKey] ?: getHeuristicQValues(stateAfterHuman)
+                            maxFutureQ = nextQ.maxOrNull() ?: 0.0
                         }
                     }
                 }
 
-                val currentQValues = currentQTable[stateKey]?.toMutableList() ?: getHeuristicQValues(stateKey).toMutableList()
-                val oldQ = currentQValues[actionIndex]
-                val newQ = oldQ + LEARNING_RATE_ALPHA * (reward + DISCOUNT_FACTOR_GAMMA * maxFutureQ - oldQ)
-
-                currentQValues[actionIndex] = newQ
-                currentQTable[stateKey] = currentQValues
-                learningEvents++
+                val currentQValues = (currentQTable[stateKey] ?: getHeuristicQValues(state)).toMutableList()
+                if (actionIndex < currentQValues.size) {
+                    val oldQ = currentQValues[actionIndex]
+                    val newQ = oldQ + LEARNING_RATE_ALPHA * (reward + DISCOUNT_FACTOR_GAMMA * maxFutureQ - oldQ)
+                    currentQValues[actionIndex] = newQ
+                    currentQTable[stateKey] = currentQValues
+                    learningEvents++
+                }
             }
-
-            aiMemoryDataStoreManager.saveQTable(currentQTable)
-            qTable = currentQTable
-            Log.d(TAG, "Memoria actualizada ($learningEvents pasos).")
+            if (learningEvents > 0) {
+                aiMemoryDataStoreManager.saveQTable(currentQTable)
+                qTable = currentQTable
+            }
         }
     }
 
@@ -180,5 +269,22 @@ class AIEngineRepositoryImpl @Inject constructor(
             qTable = emptyMap()
             aiMemoryDataStoreManager.clearQTable()
         }
+    }
+
+    override suspend fun getDailyMood(): Mood { return moodDataStoreManager.getMood() }
+    override suspend fun saveDailyMood(mood: Mood) { moodDataStoreManager.saveMoodId(mood.id) }
+
+    // Helpers necesarios
+    private suspend fun MoodDataStoreManager.getMood(): Mood {
+        val id = this.getMoodId()
+        return Mood.ALL_MOODS_CLASSIC.find { it.id == id }
+            ?: Mood.ALL_MOODS_GOMOKU.find { it.id == id }
+            ?: Mood.NORMAL
+    }
+    private fun findDiffIndex(board1: Board, board2: Board): Int {
+        val c1 = board1.cells; val c2 = board2.cells
+        if (c1.size != c2.size) return -1
+        for (i in c1.indices) if (c1[i] != c2[i]) return i
+        return -1
     }
 }

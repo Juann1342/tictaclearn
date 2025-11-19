@@ -4,9 +4,14 @@ data class Mood(
     val id: String,
     val displayName: String,
     val description: String,
-    val epsilon: Double // Probabilidad de movimiento aleatorio (0.0 a 1.0)
+    // Parámetro para Q-Learning (3x3): Probabilidad de movimiento aleatorio (0.0 a 1.0)
+    val epsilon: Double,
+    // Parámetro para Minimax (9x9): Profundidad de búsqueda (0 para desactivado/Q-Learning)
+    val minimaxDepth: Int = 0
 ) {
     companion object {
+        // --- 3x3 CLASSIC MOODS (Q-Learning) ---
+
         // NIVEL 1: Muy fácil
         val SOMNOLIENTO = Mood(
             id = "somnoliento",
@@ -44,17 +49,60 @@ data class Mood(
             id = "concentrado",
             displayName = "🧠 Concentrado",
             description = "Invencible. Usa todo su potencial.",
-            epsilon = 0.0
+            epsilon = 0.01
         )
 
-        val ALL_MOODS = listOf(SOMNOLIENTO, RELAJADO, NORMAL, ATENTO, CONCENTRADO)
+        // --- 9x9 GOMOKU MOODS (Minimax) ---
+
+        val GOMOKU_FACIL = Mood(
+            id = "gomoku_facil",
+            displayName = "🧊 Gomoku Novato",
+            description = "Profundidad 1. Defensivo básico.",
+            epsilon = 0.0,
+            minimaxDepth = 1
+        )
+
+        val GOMOKU_MEDIO = Mood(
+            id = "gomoku_medio",
+            displayName = "🌲 Gomoku Intermedio",
+            description = "Profundidad 2. Juega con previsión.",
+            epsilon = 0.0,
+            minimaxDepth = 2
+        )
+
+        val GOMOKU_DIFICIL = Mood(
+            id = "gomoku_dificil",
+            displayName = "🔥 Gomoku Experto",
+            description = "Profundidad 2+. Agresivo.",
+            epsilon = 0.0,
+            minimaxDepth = 3 // Profundidad 3 puede ser lenta en Java/Kotlin puro sin optimizar, cuidado
+        )
+
+        // Listas para la UI
+        val ALL_MOODS_CLASSIC = listOf(SOMNOLIENTO, RELAJADO, NORMAL, ATENTO, CONCENTRADO)
+        val ALL_MOODS_GOMOKU = listOf(GOMOKU_FACIL, GOMOKU_MEDIO, GOMOKU_DIFICIL)
+
+        // Lista completa (fallback)
+        val ALL_MOODS = ALL_MOODS_CLASSIC + ALL_MOODS_GOMOKU
 
         fun getDefaultDailyMood(): Mood {
             return NORMAL
         }
 
-        fun fromId(id: String): Mood {
-            return ALL_MOODS.firstOrNull { it.id == id } ?: getDefaultDailyMood()
+        fun fromId(id: String): Mood? {
+            return ALL_MOODS.find { it.id == id }
+        }
+
+        /**
+         * ✅ ESTA ES LA FUNCIÓN QUE FALTABA
+         * Devuelve el Mood por defecto según el modo de juego seleccionado.
+         */
+        fun getDefaultMoodForMode(mode: GameMode): Mood {
+            return when (mode) {
+                GameMode.CLASSIC -> NORMAL
+                GameMode.GOMOKU -> GOMOKU_MEDIO
+                else -> NORMAL
+            }
         }
     }
 }

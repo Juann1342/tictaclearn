@@ -47,11 +47,10 @@ fun TicTacToeNavHost() {
         // --- 1. Pantalla de Configuración ---
         composable(Screen.Configuration.route) {
             ConfigurationScreen(
-                onStartGame = { moodId ->
-                    // 🔄 CORRECCIÓN CRÍTICA: Navegación simple.
-                    // Hemos eliminado el bloque 'popUpTo' que borraba la historia.
-                    // Ahora, al entrar al juego, la Configuración se queda en la pila ("atrás").
-                    navController.navigate(Screen.Game.createRoute(moodId))
+                // 🔄 CORRECCIÓN: Ahora la lambda onStartGame recibe DOS Strings.
+                onStartGame = { moodId, gameModeId ->
+                    // Navega a la pantalla de juego, pasando AMBOS IDs
+                    navController.navigate(Screen.Game.createRoute(gameModeId, moodId))
                 }
             )
         }
@@ -60,14 +59,17 @@ fun TicTacToeNavHost() {
         composable(
             route = Screen.Game.route,
             arguments = listOf(
-                navArgument("moodId") { type = NavType.StringType }
+                navArgument(Screen.Game.GAME_MODE_ID_KEY) { type = NavType.StringType }, // Argumento 1: Modo
+                navArgument(Screen.Game.MOOD_ID_KEY) { type = NavType.StringType }      // Argumento 2: Mood
             )
         ) { backStackEntry ->
-            val moodId = backStackEntry.arguments?.getString("moodId") ?: ""
+            // Recuperamos AMBOS argumentos de navegación
+            val gameModeId = backStackEntry.arguments?.getString(Screen.Game.GAME_MODE_ID_KEY) ?: ""
+            val moodId = backStackEntry.arguments?.getString(Screen.Game.MOOD_ID_KEY) ?: ""
 
             GameScreen(
+                gameModeId = gameModeId,
                 moodId = moodId,
-                // Ahora 'popBackStack' funcionará porque hay algo a lo que volver
                 onGameFinished = { navController.popBackStack() }
             )
         }

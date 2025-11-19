@@ -3,37 +3,36 @@ package com.example.tictaclearn.domain.service
 import com.example.tictaclearn.domain.model.GameState
 import com.example.tictaclearn.domain.model.Mood
 import com.example.tictaclearn.domain.model.Player
-import com.example.tictaclearn.domain.repository.AIEngineRepository // Usamos la interfaz del repo
+import com.example.tictaclearn.domain.model.GameMode
+import com.example.tictaclearn.domain.repository.AIEngineRepository
 import com.example.tictaclearn.domain.model.Board
+import com.example.tictaclearn.domain.model.checkGameResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Servicio responsable de la lógica del juego.
- * Ahora DELEGA la inteligencia al AIEngineRepository para asegurar que
- * siempre se use la memoria actualizada.
- */
 @Singleton
 class TicTacToeGameService @Inject constructor(
-    private val aiEngineRepository: AIEngineRepository // Inyectamos el Repositorio
+    private val aiEngineRepository: AIEngineRepository
 ) {
-    // Estado actual del juego
     var gameState: GameState = GameState.initial()
         private set
 
-    // Estado de ánimo actual
     var currentMood: Mood? = null
         private set
 
-    /**
-     * Inicializa el juego cargando el mood.
-     */
-    suspend fun initializeGame(moodId: String) {
-        // Obtenemos el mood (o el diario si falla)
-        val mood = Mood.fromId(moodId) ?: aiEngineRepository.getDailyMood()
-        currentMood = mood
+    // Necesitamos recordar el modo actual para los resets
+    private var currentGameMode: GameMode = GameMode.CLASSIC
 
-        // Reiniciamos el tablero
+    /**
+     * ✅ CORRECCIÓN: Recibe también gameModeId para configurar el tamaño del tablero.
+     */
+    suspend fun initializeGame(moodId: String, gameModeId: String) {
+        val mood = Mood.fromId(moodId) ?: Mood.getDefaultDailyMood()
+        val mode = GameMode.fromId(gameModeId) ?: GameMode.CLASSIC
+
+        currentMood = mood
+        currentGameMode = mode
+
         resetGame()
     }
 
@@ -41,42 +40,49 @@ class TicTacToeGameService @Inject constructor(
      * Maneja el movimiento del humano.
      */
     fun handleHumanTurn(position: Int): GameState {
-        // Validar movimiento
         if (gameState.board.isPositionAvailable(position) && !gameState.isFinished) {
-            gameState = gameState.move(position, Player.Human)
+            // Pasamos el winningLength del modo actual a la lógica de movimiento
+            gameState = gameState.move(position, Player.Human, currentGameMode.winningLength)
         }
         return gameState
     }
 
     /**
-     * Maneja el turno de la IA preguntando al Repositorio.
+     * Maneja el turno de la IA.
      */
     suspend fun handleAiTurn(): GameState {
         if (gameState.isFinished || gameState.currentPlayer != Player.AI) {
             return gameState
         }
 
-        // 1. PREGUNTAR AL CEREBRO CENTRAL (Repositorio)
-        // Esto usa la Q-Table más actual y la lógica de Epsilon-Greedy
         val moveIndex = aiEngineRepository.getNextMove(
             board = gameState.board,
             currentMood = currentMood ?: Mood.getDefaultDailyMood()
+            // Nota: Para Gomoku, aquí habría que pasar el modo a la IA también,
+            // pero por ahora asumimos que getNextMove maneja la lógica interna o solo Q-Learning básico
         )
 
-        // 2. Ejecutar el movimiento si el repositorio devolvió uno válido
         if (moveIndex != null && gameState.board.isPositionAvailable(moveIndex)) {
-            gameState = gameState.move(moveIndex, Player.AI)
+            gameState = gameState.move(moveIndex, Player.AI, currentGameMode.winningLength)
         }
 
         return gameState
     }
 
     /**
-     * Reinicia solo el tablero. La memoria reside en el repositorio, así que no hay que recargarla.
+     * Reinicia el juego usando el tamaño del tablero del modo actual.
      */
     fun resetGame() {
-        gameState = GameState.initial()
+        // Creamos un tablero vacío del tamaño correcto (3x3 o 9x9)
+        val emptyBoard = Board(size = currentGameMode.boardSize)
+
+        gameState = GameState(
+            board = emptyBoard,
+            currentPlayer = Player.Human,
+            result = com.example.tictaclearn.domain.model.GameResult.Playing,
+            gameHistory = listOf(emptyBoard)
+        )
     }
 
-    // Eliminamos saveAiMemory() porque la responsabilidad ahora es del ViewModel -> Repository
+    fun getCurrentGameMode() = currentGameMode
 }

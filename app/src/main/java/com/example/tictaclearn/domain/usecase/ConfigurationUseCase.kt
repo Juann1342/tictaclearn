@@ -2,8 +2,11 @@ package com.example.tictaclearn.domain.usecase
 
 import com.example.tictaclearn.domain.model.Mood
 import com.example.tictaclearn.domain.repository.AIEngineRepository
+import android.util.Log // Importamos Log para debug
 
 // domain/usecase/ConfigurationUseCase.kt
+
+private const val TAG = "ConfigUseCase"
 
 class ConfigurationUseCase(
     // Dependemos del repositorio para acceder a los datos de la IA
@@ -12,9 +15,16 @@ class ConfigurationUseCase(
 
     // 1. Obtener el Estado de Ánimo del Día
     // La UI llamará a esto para saber qué Mood mostrar.
-    suspend fun getCurrentMood(): Mood {
-        // Simplemente le pedimos al repositorio que nos dé el Mood que guardó para hoy
-        return aiEngineRepository.getDailyMood()
+    suspend fun getCurrentMood(): Mood? {
+        return try {
+            // Asumimos que el Repositorio devuelve Mood (no nullable) según su contrato.
+            aiEngineRepository.getDailyMood()
+        } catch (e: Exception) {
+            // Si la llamada al repositorio falla (ej. error de DataStore),
+            // devolvemos un valor seguro (NORMAL) en el dominio.
+            Log.e(TAG, "Error al obtener el Mood diario, usando valor por defecto.", e)
+            Mood.NORMAL
+        }
     }
 
     // 2. Guardar el Estado de Ánimo Seleccionado

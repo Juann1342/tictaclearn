@@ -1,12 +1,14 @@
 package com.example.tictaclearn.presentation.game
 
-
 import com.example.tictaclearn.domain.model.GameState
 import com.example.tictaclearn.domain.model.Mood
+import com.example.tictaclearn.domain.model.GameMode
 
 data class GameUiState(
-    val gameState: GameState = GameState.initial(),
+    val gameState: GameState = GameState.initial(), // Estado inicial por defecto
     val currentMood: Mood? = null,
-    val isProcessingMove: Boolean = true,
+    // ✅ CORRECCIÓN: Añadimos el modo de juego para que la UI sepa el tamaño del grid
+    val currentGameMode: GameMode = GameMode.CLASSIC,
+    val isProcessingMove: Boolean = false,
     val errorMessage: String? = null
 )

@@ -1,6 +1,8 @@
 package com.example.tictaclearn.data.datastore
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -51,6 +53,7 @@ class MoodDataStoreManager @Inject constructor(
      * Verifica si es un nuevo día. Si lo es, avanza el índice de la secuencia
      * y actualiza el Mood actual automáticamente.
      */
+    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun updateDailyMoodSequenceIfNeeded() {
         val currentEpochDay = LocalDate.now().toEpochDay() // Días desde 1970 (independiente de hora)
 
