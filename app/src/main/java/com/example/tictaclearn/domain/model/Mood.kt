@@ -87,10 +87,10 @@ data class Mood(
         val GOMOKU_DIFICIL = Mood(
             id = "gomoku_dificil",
             displayName = "Gomoku Experto",
-            description = "Minimax a profundidad 3. Juega con el 97% de su potencial de cálculo. Busca la victoria óptima.",
+            description = "Minimax a profundidad 2. Utiliza su máximo potencial. Busca la victoria óptima, muy rara vez se equivoca",
             epsilon = 0.0,
-            minimaxDepth = 3,
-            gomokuExplorationRate = 0.03 // Siempre juega el mejor movimiento calculado
+            minimaxDepth = 2,
+            gomokuExplorationRate = 0.03 //
         )
 
         val ALL_MOODS_CLASSIC = listOf(SOMNOLIENTO, RELAJADO, NORMAL, ATENTO, CONCENTRADO)
