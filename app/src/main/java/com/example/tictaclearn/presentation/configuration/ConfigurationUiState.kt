@@ -3,8 +3,6 @@ package com.example.tictaclearn.presentation.configuration
 import com.example.tictaclearn.domain.model.Mood
 import com.example.tictaclearn.domain.model.GameMode // Importación necesaria
 
-// presentation/configuration/ConfigurationUiState.kt
-
 data class ConfigurationUiState(
     // 1. Estado de Carga
     val isLoading: Boolean = true, // Es 'true' al inicio, mientras esperamos que cargue el Mood diario.

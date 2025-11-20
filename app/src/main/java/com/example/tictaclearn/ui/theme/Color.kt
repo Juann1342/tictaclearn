@@ -16,3 +16,14 @@ val NeonRed = Color(0xFFFF1744)        // Reset / Derrota IA
 // Textos (Usamos colores puros para alta legibilidad)
 val TextWhite = Color(0xFFF8FAFC)
 val TextGray = Color(0xFF94A3B8)
+
+// ---- Estados del Oponente (Neón) ----
+val StateSomnoliento = Color(0xFFD1B3FF)   // Violeta suave
+val StateRelajado = Color(0xFF7FFFD4)      // Menta suave
+val StateNormal = Color(0xFFCCFF66)        // Lima suave
+val StateAtento = Color(0xFFFFE266)        // Amarillo vivo
+val StateConcentrado = Color(0xFFFF8C42)   // Naranja intenso
+
+val StateGomokuFacil = Color(0xFFD1B3FF)
+val StateGomokuMedio = Color(0xFFFFD466)
+val StateGomokuDificil = Color(0xFFFF7842)

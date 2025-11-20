@@ -30,6 +30,11 @@ import androidx.compose.material.icons.rounded.SentimentNeutral
 import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Visibility
+// Importaciones para los nuevos iconos de Gomoku
+import androidx.compose.material.icons.rounded.Water
+import androidx.compose.material.icons.rounded.Park
+
+
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,6 +55,8 @@ import com.example.tictaclearn.ui.theme.*
 import androidx.compose.ui.text.TextStyle // Import necesario para el Shadow
 import androidx.compose.ui.graphics.Shadow // Import necesario para el Shadow
 
+
+
 @Composable
 fun ConfigurationScreen(
     onStartGame: (moodId: String, gameModeId: String) -> Unit,
@@ -58,7 +65,7 @@ fun ConfigurationScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Animación de entrada
+    // Animación de entrada (mantengo la estructura de animaciones)
     val entranceOffset = remember { Animatable(50f) }
     val entranceAlpha = remember { Animatable(0f) }
 
@@ -95,7 +102,7 @@ fun ConfigurationScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // --- HEADER (Mejora de Branding con GLOW) ---
+            // --- HEADER ---
             Column(
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
@@ -107,34 +114,32 @@ fun ConfigurationScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    // 🚨 CAMBIO: Aplicamos un estilo de texto más impactante y GLOW para el branding
                     text = "TicTacLearn",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Black,
                         fontSize = 32.sp,
                         letterSpacing = 2.sp,
-                        shadow = Shadow( // Efecto Glow
+                        shadow = Shadow(
                             color = NeonOrange.copy(alpha = 0.7f),
                             offset = Offset(0f, 0f),
                             blurRadius = 15f
                         )
                     ),
-                    color = NeonOrange, // Usamos NeonOrange para el título
-
+                    color = NeonOrange,
                 )
             }
 
             // --- ZONA DE CONTROL ---
 
-            // 1. Selector de Modo (Título alineado)
+            // 1. Selector de Modo
             Text(
                 text = "MODO DE JUEGO",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = TextGray,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = 24.dp)
+                    .align(Alignment.CenterHorizontally)
                     .graphicsLayer { alpha = entranceAlpha.value }
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -143,20 +148,22 @@ fun ConfigurationScreen(
                 currentMode = uiState.selectedGameMode,
                 availableModes = uiState.availableGameModes,
                 onModeSelected = viewModel::onGameModeSelected,
-                modifier = Modifier.graphicsLayer { translationX = entranceOffset.value * 0.5f }
+                modifier = Modifier
+                    .graphicsLayer { translationX = entranceOffset.value * 0.5f }
+                    .padding(horizontal = 24.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 2. Selector de Ánimo (Título alineado)
+            // 2. Selector de Ánimo
             Text(
                 text = "NIVEL DE AMENAZA",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = TextGray,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = 24.dp)
+                    .align(Alignment.CenterHorizontally)
                     .graphicsLayer { alpha = entranceAlpha.value }
             )
 
@@ -177,15 +184,14 @@ fun ConfigurationScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // 3. Tarjeta Principal (Mejorada visualmente)
+                // 3. Tarjeta Principal
                 Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                    // 🚨 REEMPLAZO: MoodDescriptionCard contiene la nueva estética
                     MoodDescriptionCard(uiState.currentMood)
                 }
 
                 Spacer(modifier = Modifier.height(48.dp))
 
-                // --- BOTONES DE ACCIÓN (Mejora de Jerarquía) ---
+                // --- BOTONES DE ACCIÓN ---
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
@@ -194,13 +200,12 @@ fun ConfigurationScreen(
                             alpha = entranceAlpha.value
                         }
                 ) {
-                    // 🚨 PRIMARIO: Botón de Neón Naranja (Mayor altura, más redondeado)
                     Button(
                         onClick = { onStartGame(uiState.currentMood.id, uiState.selectedGameMode.id) },
                         enabled = !uiState.isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(60.dp), // Más alto para el CTA principal
+                            .height(60.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = NeonOrange)
                     ) {
@@ -214,7 +219,6 @@ fun ConfigurationScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 🚨 SECUNDARIO: Botón Outlined de Neón Rojo (Menor altura, color de acento)
                     OutlinedButton(
                         onClick = viewModel::onResetMemoryClicked,
                         modifier = Modifier
@@ -233,7 +237,7 @@ fun ConfigurationScreen(
     }
 }
 
-// --- COMPONENTES ACTUALIZADOS ---
+// --- COMPONENTES AUXILIARES ---
 
 @Composable
 fun GameModeSelector(
@@ -242,17 +246,16 @@ fun GameModeSelector(
     onModeSelected: (GameMode) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(horizontal = 24.dp),
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth()
     ) {
-        items(availableModes) { mode ->
+        availableModes.forEach { mode ->
             val isSelected = mode == currentMode
-            val color = if (isSelected) NeonCyan else SurfaceLight
-            val icon = if (mode == GameMode.GOMOKU) Icons.Rounded.GridOn else Icons.Rounded.Star
+            val color = if (mode == GameMode.GOMOKU) NeonCyan else NeonOrange
+            val icon = getGameModeIcon(mode)
 
-            // 🚨 CAMBIO: FilterChip para un look más moderno y mejor feedback (Estilo Neón)
             FilterChip(
                 selected = isSelected,
                 onClick = { onModeSelected(mode) },
@@ -265,17 +268,18 @@ fun GameModeSelector(
                 },
                 leadingIcon = { Icon(imageVector = icon, contentDescription = null, tint = color) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = color.copy(alpha = 0.15f), // Fondo sutil del color neón
+                    selectedContainerColor = color.copy(alpha = 0.15f),
                     selectedLabelColor = color,
                     labelColor = TextGray,
                     containerColor = SurfaceDark
                 ),
                 border = FilterChipDefaults.filterChipBorder(
                     borderColor = if(isSelected) color else Color.Transparent,
-                    borderWidth = 2.dp, // Borde más grueso para resaltar el neón
+                    borderWidth = 2.dp,
                     enabled = true, selected = isSelected
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -297,7 +301,6 @@ fun MoodSelector(
             val isSelected = mood == currentMood
             val (activeColor, icon) = getMoodVisuals(mood.id)
 
-            // 🚨 CAMBIO: Uso de FilterChip para consistencia y mejor feedback (Estilo Neón)
             FilterChip(
                 selected = isSelected,
                 onClick = { onMoodSelected(mood) },
@@ -335,7 +338,6 @@ fun MoodDescriptionCard(mood: Mood) {
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        // 🚨 CAMBIO: Borde sutil y más redondeado
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -348,7 +350,7 @@ fun MoodDescriptionCard(mood: Mood) {
                 .fillMaxWidth()
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                // 🚨 CAMBIO: Icono grande con fondo circular sutil (Glow/Aura)
+                // Icono grande con fondo circular sutil (Glow/Aura)
                 Box(
                     modifier = Modifier
                         .size(56.dp)
@@ -374,7 +376,7 @@ fun MoodDescriptionCard(mood: Mood) {
                         color = color,
                         letterSpacing = 0.5.sp
                     )
-                    // 🚨 CAMBIO: Descripción corta debajo del título
+                    // Descripción corta debajo del título
                     Text(
                         text = getShortPersonaDescription(mood),
                         style = MaterialTheme.typography.bodyMedium,
@@ -403,7 +405,7 @@ fun MoodDescriptionCard(mood: Mood) {
                 lineHeight = 24.sp
             )
 
-            // 🚨 CAMBIO: Contenido Expandido
+            // Contenido Expandido
             AnimatedVisibility(visible = isExpanded) {
                 Column(modifier = Modifier.padding(top = 24.dp)) {
                     // Separador sutil
@@ -422,25 +424,37 @@ fun MoodDescriptionCard(mood: Mood) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    val intelligenceType = if (mood.minimaxDepth > 0) "ESTRATEGA (Lógica)" else "CREATIVA (Aprendizaje)"
+                    val intelligenceType = if (mood.minimaxDepth > 0) "ESTRATEGA (Minimax)" else "ADAPTATIVA (Q-Learning)"
                     AttributeRow(label = "Tipo de Mente", value = intelligenceType, color = color)
 
                     val (styleLabel, styleValue) = getPlayStyle(mood)
                     AttributeRow(label = styleLabel, value = styleValue, color = TextWhite)
 
+                    // 🚨 NUEVO: Mostrar tasa de exploración para Gomoku
+                    if (mood.minimaxDepth > 0) {
+                        // Usamos el color de alerta (NeonRed) o un gris si es 0.0
+                        val failColor = if (mood.gomokuExplorationRate > 0.1) NeonRed.copy(alpha = 0.8f) else TextGray.copy(alpha = 0.8f)
+                        AttributeRow(
+                            label = "Probabilidad de Fallo (Exploración)",
+                            value = "${(mood.gomokuExplorationRate * 100).toInt()}%",
+                            color = failColor
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // 🚨 CAMBIO: Barra de Progreso mejorada
+                    // Barra de Progreso mejorada
                     if (mood.minimaxDepth == 0) {
                         BehaviorBar(
-                            label = "Nivel de Caos / Creatividad",
-                            value = mood.epsilon.toFloat(),
+                            label = "Potencia de Memoria (1 - $\\epsilon$)",
+                            value = 1f - mood.epsilon.toFloat(),
                             color = color
                         )
                     } else {
-                        val normalizedDepth = (mood.minimaxDepth / 5f).coerceIn(0f, 1f)
+                        // Normalizamos sobre 3 (la profundidad máxima de Gomoku)
+                        val normalizedDepth = (mood.minimaxDepth / 3f).coerceIn(0f, 1f)
                         BehaviorBar(
-                            label = "Potencia de Cálculo",
+                            label = "Potencia de Cálculo (Profundidad: ${mood.minimaxDepth})",
                             value = normalizedDepth,
                             color = color
                         )
@@ -451,41 +465,14 @@ fun MoodDescriptionCard(mood: Mood) {
     }
 }
 
-// --- UTILS (Mejoras menores de estilo) ---
-
-@Composable
-fun AttributeRow(label: String, value: String, color: Color) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = TextGray)
-        Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = color)
-    }
-}
-
-@Composable
-fun BehaviorBar(label: String, value: Float, color: Color) {
-    Column {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(text = label, style = MaterialTheme.typography.labelSmall, color = TextGray)
-            Text(text = "${(value * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, color = color)
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        val animatedProgress by animateFloatAsState(targetValue = value, label = "bar")
-        LinearProgressIndicator(
-            progress = { animatedProgress },
-            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-            color = color,
-            trackColor = SurfaceLight.copy(alpha = 0.2f)
-        )
-    }
-}
+// ... (El resto de funciones auxiliares) ...
 
 fun getShortPersonaDescription(mood: Mood): String {
     return when {
-        mood.minimaxDepth >= 4 -> "⚠️ Peligro: Letal."
-        mood.minimaxDepth in 1..3 -> "Calculadora y fría."
+        // Ajustamos la descripción corta del Gomoku
+        mood.minimaxDepth == 3 -> "Máxima concentración."
+        mood.minimaxDepth > 0 && mood.gomokuExplorationRate > 0.5 -> "Calculadora muy distraída."
+        mood.minimaxDepth > 0 -> "Calculadora, pero se distrae a veces."
         mood.epsilon > 0.5 -> "Distraída y experimental."
         mood.epsilon < 0.2 -> "Juega de memoria."
         else -> "Un rival digno."
@@ -495,13 +482,13 @@ fun getShortPersonaDescription(mood: Mood): String {
 fun getPlayStyle(mood: Mood): Pair<String, String> {
     return if (mood.minimaxDepth > 0) {
         "Visión Futura" to when (mood.minimaxDepth) {
-            1 -> "1 Turno"
-            2 -> "2 Turnos"
-            3 -> "3 Turnos"
-            else -> "Omnisciente"
+            1 -> "1 Turno (Reactivo)"
+            2 -> "2 Turnos (Previsor)"
+            3 -> "3 Turnos (Estratégico)"
+            else -> "Error de Config"
         }
     } else {
-        "Estilo" to when {
+        "Estilo Q-Learning" to when {
             mood.epsilon > 0.6 -> "Errático"
             mood.epsilon > 0.3 -> "Balanceado"
             else -> "Maestro"
@@ -513,17 +500,70 @@ fun getPlayStyle(mood: Mood): Pair<String, String> {
 fun getMoodVisuals(moodId: String): Pair<Color, ImageVector> {
     return when (moodId.lowercase()) {
         // CLÁSICO (Q-Learning)
-        "somnoliento" -> Color(0xFFB0BEC5) to Icons.Rounded.Bedtime // 🌙 Luna (Gris)
-        "relajado" -> Color(0xFF81C784) to Icons.Rounded.Spa         // 🌸 Spa/Zen (Verde)
-        "normal" -> NeonOrange to Icons.Rounded.SentimentNeutral     // 😐 Neutral (Naranja)
-        "atento" -> Color(0xFFFB8C00) to Icons.Rounded.Visibility    // 👁️ Ojo (Naranja Fuerte)
-        "concentrado" -> NeonRed to Icons.Rounded.Psychology         // 🧠 Cerebro (Rojo)
+        "somnoliento" -> StateSomnoliento to Icons.Rounded.Bedtime // Gris Claro
+        "relajado" -> StateRelajado to Icons.Rounded.Spa         // Verde Suave
+        "normal" -> StateNormal to Icons.Rounded.SentimentNeutral     // Amarillo
+        "atento" -> StateAtento to Icons.Rounded.Visibility    // Naranja
+        "concentrado" -> StateConcentrado to Icons.Rounded.Psychology         // Rojo
 
         // GOMOKU (Minimax)
-        "gomoku_facil" -> Color(0xFF78909C) to Icons.Rounded.Filter1 // 1️⃣ Nivel 1
-        "gomoku_medio" -> NeonCyan to Icons.Rounded.Filter2          // 2️⃣ Nivel 2
-        "gomoku_dificil" -> Color(0xFFD500F9) to Icons.Rounded.Bolt  // ⚡ Rayo (Violeta)
+        "gomoku_facil" -> StateGomokuFacil to Icons.Rounded.Water // Gris Azulado (Agua/Hielo)
+        "gomoku_medio" -> StateGomokuMedio to Icons.Rounded.Park // Azul (Bosque/Tierra)
+        "gomoku_dificil" -> StateGomokuDificil to Icons.Rounded.Bolt  // Violeta Intenso (Rayo)
 
         else -> NeonCyan to Icons.Rounded.SentimentNeutral
+    }
+}
+
+@Composable
+fun AttributeRow(label: String, value: String, color: Color) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextGray
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = color
+        )
+    }
+    Spacer(modifier = Modifier.height(4.dp))
+}
+
+@Composable
+fun BehaviorBar(label: String, value: Float, color: Color) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(label, style = MaterialTheme.typography.bodySmall, color = TextGray)
+            Text("${(value * 100).toInt()}%", style = MaterialTheme.typography.bodySmall, color = color)
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        LinearProgressIndicator(
+            progress = { value },
+            color = color,
+            trackColor = SurfaceLight.copy(alpha = 0.3f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp))
+        )
+    }
+}
+
+fun getGameModeIcon(mode: GameMode): ImageVector {
+    return when (mode) {
+        GameMode.CLASSIC -> Icons.Rounded.GridOn
+        GameMode.GOMOKU -> Icons.Rounded.Star
+        else -> Icons.Rounded.GridOn
     }
 }

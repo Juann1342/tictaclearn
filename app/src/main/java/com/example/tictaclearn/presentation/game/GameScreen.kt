@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.ExitToApp
 
 
 @Composable
@@ -75,7 +76,7 @@ fun GameScreen(
                 // Altura dinámica para evitar saltos de layout
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (uiState.gameState.isFinished) 140.dp else 80.dp)
+                    .height(140.dp)
                     .padding(horizontal = 12.dp)
                     .padding(bottom = 8.dp),
                 contentAlignment = Alignment.TopCenter
@@ -123,10 +124,34 @@ fun GameScreen(
                             fontSize = 16.sp
                         )
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 🚨 NUEVO: Botón ABANDONAR PARTIDA (solo mientras juega)
+                    if (!uiState.gameState.isFinished) {
+                        OutlinedButton(
+                            onClick = onGameFinished, // Navegar al menú al abandonar
+                            enabled = !uiState.isProcessingMove,
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .height(50.dp),
+                            // Usar NeonRed para el borde y texto (advertencia)
+                            border = BorderStroke(1.dp, NeonRed.copy(alpha = 0.7f)),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonRed)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ExitToApp,
+                                contentDescription = "Abandonar partida",
+                                tint = NeonRed,
+                                modifier = Modifier.size(20.dp).padding(end = 6.dp)
+                            )
+                            Text("ABANDONAR PARTIDA", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        }
+                    }
 
                     if (uiState.gameState.isFinished) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        // 🚨 CAMBIO UI: Botón Volver al Menú con Icono y Borde Sutil
+
+                        // 🚨 Botón Volver al Menú (YA ESTÁ IMPLEMENTADO CON TU LÓGICA ORIGINAL)
                         OutlinedButton(
                             onClick = onGameFinished,
                             modifier = Modifier
