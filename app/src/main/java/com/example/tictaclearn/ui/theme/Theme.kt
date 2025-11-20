@@ -16,35 +16,35 @@ private val GameColorScheme = darkColorScheme(
     secondary = NeonCyan,
     onSecondary = BackgroundDark,
     tertiary = NeonGreen,
+    error = NeonRed,
+
     background = BackgroundDark,
     surface = SurfaceDark,
     onBackground = TextWhite,
-    onSurface = TextWhite,
-    error = NeonRed
+    onSurface = TextWhite
 )
 
 @Composable
 fun TicTacLearnTheme(
-    // Ignoramos el parámetro darkTheme del sistema, siempre será oscuro
+    darkTheme: Boolean = true, // Forzamos Dark Mode
+    dynamicColor: Boolean = false, // Deshabilitamos color dinámico para mantener la marca
     content: @Composable () -> Unit
 ) {
-    val colorScheme = GameColorScheme
+    val colorScheme = GameColorScheme // Usamos nuestro esquema de colores fijo
     val view = LocalView.current
 
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Pintamos la barra de estado del color de fondo para inmersión total
             window.statusBarColor = BackgroundDark.toArgb()
             window.navigationBarColor = BackgroundDark.toArgb()
-            // Forzamos iconos claros en la barra de estado
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // Asegúrate de que tu archivo Type.kt exista, sino usa el default
+        typography = Typography, // Asumimos que Typography está definido
         content = content
     )
 }

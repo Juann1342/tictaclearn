@@ -7,6 +7,12 @@ enum class Player(val symbol: Char) {
     companion object {
         fun fromSymbol(symbol: Char): Player = entries.first { it.symbol == symbol }
     }
+
+    // 🚨 MEJORA UX/DOMINIO: Función para obtener al oponente, que causó el error en la UI.
+    fun other(): Player = when(this) {
+        Human -> AI
+        AI -> Human
+    }
 }
 
 sealed class GameResult {
@@ -52,7 +58,8 @@ data class GameState(
 
         // 3. Cambiar turno
         val gameIsOver = newResult != GameResult.Playing
-        val nextPlayer = if (gameIsOver) player else if (player == Player.Human) Player.AI else Player.Human
+        // 🚨 CORRECCIÓN: Usa la nueva función other()
+        val nextPlayer = if (gameIsOver) player else player.other()
 
         // 4. Actualizar historial
         val updatedHistory = gameHistory + newBoard

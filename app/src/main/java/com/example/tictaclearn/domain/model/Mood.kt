@@ -15,7 +15,7 @@ data class Mood(
         // NIVEL 1: Muy fácil
         val SOMNOLIENTO = Mood(
             id = "somnoliento",
-            displayName = "😴 Somnoliento",
+            displayName = "Somnoliento",
             description = "Juega casi al azar. Ideal para aprender.",
             epsilon = 0.8
         )
@@ -23,7 +23,7 @@ data class Mood(
         // NIVEL 2: Fácil
         val RELAJADO = Mood(
             id = "relajado",
-            displayName = "🙂 Relajado",
+            displayName = "Relajado",
             description = "Comete errores frecuentes, pero intenta jugar.",
             epsilon = 0.5
         )
@@ -31,7 +31,7 @@ data class Mood(
         // NIVEL 3: Intermedio
         val NORMAL = Mood(
             id = "normal",
-            displayName = "😐 Normal",
+            displayName = "Normal",
             description = "Un reto equilibrado. A veces se despista.",
             epsilon = 0.2
         )
@@ -39,7 +39,7 @@ data class Mood(
         // NIVEL 4: Difícil
         val ATENTO = Mood(
             id = "atento",
-            displayName = "🧐 Atento",
+            displayName = "Atento",
             description = "Juega serio. Rara vez comete errores simples.",
             epsilon = 0.05
         )
@@ -47,7 +47,7 @@ data class Mood(
         // NIVEL 5: Experto
         val CONCENTRADO = Mood(
             id = "concentrado",
-            displayName = "🧠 Concentrado",
+            displayName = "Concentrado",
             description = "Invencible. Usa todo su potencial.",
             epsilon = 0.01
         )
@@ -56,7 +56,7 @@ data class Mood(
 
         val GOMOKU_FACIL = Mood(
             id = "gomoku_facil",
-            displayName = "🧊 Gomoku Novato",
+            displayName = "Gomoku Novato",
             description = "Profundidad 1. Defensivo básico.",
             epsilon = 0.0,
             minimaxDepth = 1
@@ -64,7 +64,7 @@ data class Mood(
 
         val GOMOKU_MEDIO = Mood(
             id = "gomoku_medio",
-            displayName = "🌲 Gomoku Intermedio",
+            displayName = "Gomoku Intermedio",
             description = "Profundidad 2. Juega con previsión.",
             epsilon = 0.0,
             minimaxDepth = 2
@@ -72,7 +72,7 @@ data class Mood(
 
         val GOMOKU_DIFICIL = Mood(
             id = "gomoku_dificil",
-            displayName = "🔥 Gomoku Experto",
+            displayName = "Gomoku Experto",
             description = "Profundidad 2+. Agresivo.",
             epsilon = 0.0,
             minimaxDepth = 3 // Profundidad 3 puede ser lenta en Java/Kotlin puro sin optimizar, cuidado
