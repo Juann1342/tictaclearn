@@ -90,7 +90,7 @@ data class Mood(
             description = "Minimax a profundidad 2. Utiliza su máximo potencial. Busca la victoria óptima, muy rara vez se equivoca",
             epsilon = 0.0,
             minimaxDepth = 2,
-            gomokuExplorationRate = 0.03 //
+            gomokuExplorationRate = 0.005 // 0.5% de chance de hacer un movimiento aleatorio
         )
 
         val ALL_MOODS_CLASSIC = listOf(SOMNOLIENTO, RELAJADO, NORMAL, ATENTO, CONCENTRADO)
