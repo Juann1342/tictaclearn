@@ -18,19 +18,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.* // Imports genéricos
-// 👇 NUEVOS IMPORTS: Los iconos específicos para tu "Neural Arena"
-import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.filled.* import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.Filter1
-import androidx.compose.material.icons.rounded.Filter2
 import androidx.compose.material.icons.rounded.GridOn
 import androidx.compose.material.icons.rounded.Psychology
 import androidx.compose.material.icons.rounded.SentimentNeutral
 import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Visibility
-// Importaciones para los nuevos iconos de Gomoku
 import androidx.compose.material.icons.rounded.Water
 import androidx.compose.material.icons.rounded.Park
 
@@ -52,9 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tictaclearn.domain.model.Mood
 import com.example.tictaclearn.domain.model.GameMode
 import com.example.tictaclearn.ui.theme.*
-import androidx.compose.ui.text.TextStyle // Import necesario para el Shadow
-import androidx.compose.ui.graphics.Shadow // Import necesario para el Shadow
-
+import androidx.compose.ui.graphics.Shadow
 
 
 @Composable
@@ -65,7 +58,11 @@ fun ConfigurationScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Animación de entrada (mantengo la estructura de animaciones)
+    // 🚀 FIX: Llamamos al método de recarga cada vez que la pantalla se compone/reaparece
+    LaunchedEffect(Unit) {
+        viewModel.loadConfigData()
+    }
+
     val entranceOffset = remember { Animatable(50f) }
     val entranceAlpha = remember { Animatable(0f) }
 
@@ -155,6 +152,21 @@ fun ConfigurationScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // 🚀 Indicador de entrenamiento (solo para Classic)
+            AnimatedVisibility(visible = uiState.selectedGameMode == GameMode.CLASSIC) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                ) {
+                    TrainingProgressIndicator(
+                        gamesPlayedCount = uiState.classicGamesPlayedCount,
+                        maxGames = ConfigurationUiState.MAX_TRAINING_GAMES
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp)) // Espaciador fijo
+
             // 2. Selector de Ánimo
             Text(
                 text = "NIVEL DE AMENAZA",
@@ -219,17 +231,20 @@ fun ConfigurationScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedButton(
-                        onClick = viewModel::onResetMemoryClicked,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        enabled = !uiState.isLoading,
-                        shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(1.dp, NeonRed.copy(alpha = 0.5f)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonRed)
-                    ) {
-                        Text("REINICIAR MEMORIA IA", fontWeight = FontWeight.Bold)
+                    // 🚨 BOTÓN REINICIAR MEMORIA (Solo para Classic)
+                    AnimatedVisibility(visible = uiState.selectedGameMode == GameMode.CLASSIC) {
+                        OutlinedButton(
+                            onClick = viewModel::onResetMemoryClicked,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            enabled = !uiState.isLoading,
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, NeonRed.copy(alpha = 0.5f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonRed)
+                        ) {
+                            Text("REINICIAR MEMORIA IA", fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -237,7 +252,60 @@ fun ConfigurationScreen(
     }
 }
 
-// --- COMPONENTES AUXILIARES ---
+
+// --- NUEVO COMPONENTE: INDICADOR DE PROGRESO DE ENTRENAMIENTO ---
+
+@Composable
+fun TrainingProgressIndicator(gamesPlayedCount: Int, maxGames: Int) {
+    val actualCount = gamesPlayedCount.coerceAtMost(maxGames)
+    val progress = (actualCount.toFloat() / maxGames.toFloat()).coerceIn(0f, 1f)
+    val color = if (progress >= 1f) NeonGreen else NeonCyan
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Text(
+                text = "Progreso de Entrenamiento (Q-Learning)",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextGray
+            )
+            Text(
+                text = if (progress >= 1f) "100% (¡Óptimo!)" else "${(progress * 100).toInt()}%",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "Partidas jugadas: $actualCount / $maxGames",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextGray.copy(alpha = 0.7f)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        val animatedProgress by animateFloatAsState(
+            targetValue = progress,
+            animationSpec = tween(durationMillis = 1000),
+            label = "Training Progress Animation"
+        )
+        LinearProgressIndicator(
+            progress = { animatedProgress },
+            color = color,
+            trackColor = SurfaceLight.copy(alpha = 0.3f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(RoundedCornerShape(8.dp))
+        )
+    }
+}
+
+// --- COMPONENTES AUXILIARES (DEBEN ESTAR EN EL ARCHIVO) ---
 
 @Composable
 fun GameModeSelector(
@@ -432,7 +500,6 @@ fun MoodDescriptionCard(mood: Mood) {
 
                     // 🚨 NUEVO: Mostrar tasa de exploración para Gomoku
                     if (mood.minimaxDepth > 0) {
-                        // Usamos el color de alerta (NeonRed) o un gris si es 0.0
                         val failColor = if (mood.gomokuExplorationRate > 0.1) NeonRed.copy(alpha = 0.8f) else TextGray.copy(alpha = 0.8f)
                         AttributeRow(
                             label = "Probabilidad de Fallo (Exploración)",
@@ -465,8 +532,6 @@ fun MoodDescriptionCard(mood: Mood) {
     }
 }
 
-// ... (El resto de funciones auxiliares) ...
-
 fun getShortPersonaDescription(mood: Mood): String {
     return when {
         // Ajustamos la descripción corta del Gomoku
@@ -496,20 +561,19 @@ fun getPlayStyle(mood: Mood): Pair<String, String> {
     }
 }
 
-// 👇 Iconos y Colores para los Moods
 fun getMoodVisuals(moodId: String): Pair<Color, ImageVector> {
     return when (moodId.lowercase()) {
         // CLÁSICO (Q-Learning)
-        "somnoliento" -> StateSomnoliento to Icons.Rounded.Bedtime // Gris Claro
-        "relajado" -> StateRelajado to Icons.Rounded.Spa         // Verde Suave
-        "normal" -> StateNormal to Icons.Rounded.SentimentNeutral     // Amarillo
-        "atento" -> StateAtento to Icons.Rounded.Visibility    // Naranja
-        "concentrado" -> StateConcentrado to Icons.Rounded.Psychology         // Rojo
+        "somnoliento" -> StateSomnoliento to Icons.Rounded.Bedtime
+        "relajado" -> StateRelajado to Icons.Rounded.Spa
+        "normal" -> StateNormal to Icons.Rounded.SentimentNeutral
+        "atento" -> StateAtento to Icons.Rounded.Visibility
+        "concentrado" -> StateConcentrado to Icons.Rounded.Psychology
 
         // GOMOKU (Minimax)
-        "gomoku_facil" -> StateGomokuFacil to Icons.Rounded.Water // Gris Azulado (Agua/Hielo)
-        "gomoku_medio" -> StateGomokuMedio to Icons.Rounded.Park // Azul (Bosque/Tierra)
-        "gomoku_dificil" -> StateGomokuDificil to Icons.Rounded.Bolt  // Violeta Intenso (Rayo)
+        "gomoku_facil" -> StateGomokuFacil to Icons.Rounded.Water
+        "gomoku_medio" -> StateGomokuMedio to Icons.Rounded.Park
+        "gomoku_dificil" -> StateGomokuDificil to Icons.Rounded.Bolt
 
         else -> NeonCyan to Icons.Rounded.SentimentNeutral
     }

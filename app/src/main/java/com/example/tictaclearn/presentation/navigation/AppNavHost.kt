@@ -1,7 +1,5 @@
 package com.example.tictaclearn.presentation.navigation
 
-// presentation/navigation/AppNavHost.kt
-
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
@@ -11,8 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.tictaclearn.presentation.configuration.ConfigurationScreen
 import com.example.tictaclearn.presentation.game.GameScreen
-import com.example.tictaclearn.presentation.navigation.Screen
-/*
+
 @Composable
 fun AppNavHost(
     modifier: Modifier = Modifier
@@ -24,46 +21,36 @@ fun AppNavHost(
         startDestination = Screen.Configuration.route,
         modifier = modifier
     ) {
-        // --- 1. RUTA DE CONFIGURACIÓN ---
+        // --- 1. RUTA DE CONFIGURACIÓN (MENÚ) ---
         composable(Screen.Configuration.route) {
             ConfigurationScreen(
-                onStartGame = { moodId ->
-                    // Navegar al GameScreen, pasando el ID del Mood como argumento
-                    navController.navigate(Screen.Game(moodId).createRoute())
+                // Ahora pasamos DOS argumentos: moodId y gameModeId
+                onStartGame = { moodId, gameModeId ->
+                    navController.navigate(Screen.Game.createRoute(gameModeId, moodId))
                 }
             )
         }
 
         // --- 2. RUTA DEL JUEGO ---
         composable(
-            route = "game_screen/{${Screen.Game.MOOD_ID_KEY}}",
+            route = Screen.Game.route, // Usamos la ruta definida en Screen.kt
             arguments = listOf(
-                navArgument(Screen.Game.MOOD_ID_KEY) {
-                    type = NavType.StringType
-                    // Si el MoodId no llega por alguna razón, fallará y forzará a revisarlo.
-                    nullable = false
-                }
+                navArgument(Screen.Game.MOOD_ID_KEY) { type = NavType.StringType },
+                navArgument(Screen.Game.GAME_MODE_ID_KEY) { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            // Recuperamos el MoodId del argumento de navegación
-            val moodId = backStackEntry.arguments?.getString(Screen.Game.MOOD_ID_KEY)
-
-            // Si el moodId es nulo (no debería ocurrir con nullable=false), volvemos.
-            if (moodId == null) {
-                navController.popBackStack()
-                return@composable
-            }
+            // Recuperamos los DOS argumentos
+            val moodId = backStackEntry.arguments?.getString(Screen.Game.MOOD_ID_KEY) ?: "normal"
+            val gameModeId = backStackEntry.arguments?.getString(Screen.Game.GAME_MODE_ID_KEY) ?: "classic_3x3"
 
             GameScreen(
                 moodId = moodId,
+                gameModeId = gameModeId, // Pasamos el modo al juego
                 onGameFinished = {
-                    // Cuando el juego termina (victoria, derrota, o empate), volvemos a la configuración
-                    navController.popBackStack(
-                        route = Screen.Configuration.route,
-                        inclusive = false
-                    )
+                    // Volver al menú y limpiar la pila para no volver al juego con "Atrás"
+                    navController.popBackStack(Screen.Configuration.route, inclusive = false)
                 }
             )
         }
     }
-}*/
+}

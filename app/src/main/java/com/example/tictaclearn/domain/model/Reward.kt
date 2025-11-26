@@ -2,34 +2,24 @@ package com.example.tictaclearn.domain.model
 
 
 /**
- * Recompensas usadas en Q-Learning para evaluar el resultado de un movimiento o partida.
- * Aumentamos la magnitud para acelerar el aprendizaje.
+ * Define los valores de recompensa para el algoritmo Q-Learning.
+ * La IA busca maximizar estos puntos.
  */
 object Reward {
-    // Recompensa por ganar la partida: Aumentada de 10.0 a 50.0
-    const val WIN = 50.0
-    // Recompensa por empatar: Mantenida, pero menor que la ganancia.
-    const val TIE = 1.0
-    // Penalización por perder la partida: Aumentada de -10.0 a -50.0
-    const val LOSE = -50.0
-    // Recompensa por un estado intermedio (mientras el juego está en curso)
-    const val DEFAULT = 0.0
+    const val WIN = 10.0       // Gran premio por ganar
+    const val LOSE = -10.0     // Gran castigo por perder
+    const val TIE = 1.0       // Empatar es mejor que perder (premio pequeño)
+    const val DEFAULT = 0.0   // Movimiento normal sin resultado inmediato
 
     /**
-     * Determina la recompensa numérica que el jugador especificado (normalmente la IA)
-     * debe recibir en función del resultado final de la partida.
-     *
-     * @param result El resultado actual del juego (Win, Draw, o Playing).
-     * @param player El jugador para el cual se calcula la recompensa.
-     * @return El valor numérico de la recompensa.
+     * Calcula la recompensa basada en el resultado del juego desde la perspectiva de la IA.
      */
-    fun getReward(result: GameResult, player: Player): Double {
+    fun getReward(result: GameResult, aiPlayer: Player): Double {
         return when (result) {
-            // Si hay un ganador, verifica si el jugador actual es el ganador o el perdedor.
-            is GameResult.Win -> if (result.winner == player) WIN else LOSE
-            // Si es un empate.
+            is GameResult.Win -> {
+                if (result.winner == aiPlayer) WIN else LOSE
+            }
             GameResult.Draw -> TIE
-            // Si el juego está en curso.
             GameResult.Playing -> DEFAULT
         }
     }

@@ -15,15 +15,11 @@ import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// IMPORTACIONES CRÍTICAS: Si estas faltan, el proyecto no compila.
-import com.example.tictaclearn.data.datastore.AiMemory
-import com.example.tictaclearn.data.datastore.QTable
-
-
 private val Context.aiMemoryDataStore: DataStore<Preferences> by preferencesDataStore(name = "ai_memory")
 
-private val Q_TABLE_KEY = stringPreferencesKey("ai_q_table")
-private const val EMPTY_Q_TABLE_JSON = "{\"qTable\":{}}"
+private val AI_MEMORY_KEY = stringPreferencesKey("ai_memory_data")
+// Usamos el JSON de un objeto AiMemory por defecto para el "empty state"
+private const val EMPTY_AI_MEMORY_JSON = "{\"qTable\":{},\"gamesPlayedCount\":0}"
 
 @Singleton
 class AiMemoryDataStoreManager @Inject constructor(
@@ -32,42 +28,39 @@ class AiMemoryDataStoreManager @Inject constructor(
     private val memoryDataStore = context.aiMemoryDataStore
 
     /**
-     * Carga la Q-Table deserializando el objeto AiMemory.
-     * @return La QTable deserializada (Map<String, List<Double>>).
+     * 🚀 NUEVO: Carga el objeto AiMemory completo (QTable + Contador).
      */
-    suspend fun getQTable(): QTable {
+    suspend fun getAiMemory(): AiMemory {
         val jsonString = memoryDataStore.data
             .map { preferences ->
-                preferences[Q_TABLE_KEY] ?: EMPTY_Q_TABLE_JSON
+                preferences[AI_MEMORY_KEY] ?: EMPTY_AI_MEMORY_JSON
             }.first()
 
-        // Si el JSON es EMPTY_Q_TABLE_JSON, devolvemos un mapa vacío
-        return if (jsonString == EMPTY_Q_TABLE_JSON) {
-            emptyMap()
-        } else {
-            // Deserializamos el objeto AiMemory (wrapper) y extraemos la QTable
-            Json.decodeFromString<AiMemory>(jsonString).qTable
+        // Deserializamos el objeto AiMemory completo
+        return try {
+            Json.decodeFromString<AiMemory>(jsonString)
+        } catch (e: Exception) {
+            // Manejar un error de deserialización o formato viejo, devolviendo el valor por defecto
+            Json.decodeFromString(EMPTY_AI_MEMORY_JSON)
         }
     }
 
     /**
-     * Guarda la Q-Table serializando el objeto AiMemory.
+     * 🚀 NUEVO: Guarda el objeto AiMemory completo (QTable + Contador).
      */
-    suspend fun saveQTable(qTable: QTable) {
-        // Creamos el wrapper AiMemory para serializar el mapa correctamente
-        val aiMemory = AiMemory(qTable = qTable)
+    suspend fun saveAiMemory(aiMemory: AiMemory) {
         memoryDataStore.edit { preferences ->
-            // Serializamos el objeto AiMemory completo
-            preferences[Q_TABLE_KEY] = Json.encodeToString(aiMemory)
+            preferences[AI_MEMORY_KEY] = Json.encodeToString(aiMemory)
         }
     }
 
     /**
-     * Borra la memoria.
+     * Borra la memoria, reseteando la QTable y el contador.
      */
-    suspend fun clearQTable() {
+    suspend fun clearAiMemory() {
         memoryDataStore.edit { preferences ->
-            preferences.remove(Q_TABLE_KEY)
+            // Guardamos el JSON de un AiMemory vacío (qTable vacía, contador a 0).
+            preferences[AI_MEMORY_KEY] = EMPTY_AI_MEMORY_JSON
         }
     }
 }
