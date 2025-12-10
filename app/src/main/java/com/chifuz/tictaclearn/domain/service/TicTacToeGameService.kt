@@ -9,6 +9,7 @@ import com.chifuz.tictaclearn.domain.model.Board
 import com.chifuz.tictaclearn.domain.model.GameResult
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random // 👈 Importante
 
 @Singleton
 class TicTacToeGameService @Inject constructor(
@@ -20,11 +21,11 @@ class TicTacToeGameService @Inject constructor(
     var currentMood: Mood? = null
         private set
 
-    // Necesitamos recordar el modo actual para los resets
     private var currentGameMode: GameMode = GameMode.CLASSIC
 
     /**
-     * ✅ CORRECCIÓN: Recibe también gameModeId para configurar el tamaño del tablero.
+     * Inicializa el juego.
+     * Al ser suspend, el ViewModel esperará aquí hasta que termine el reset.
      */
     suspend fun initializeGame(moodId: String, gameModeId: String) {
         val mood = Mood.fromId(moodId) ?: Mood.getDefaultDailyMood()
@@ -36,20 +37,13 @@ class TicTacToeGameService @Inject constructor(
         resetGame()
     }
 
-    /**
-     * Maneja el movimiento del humano.
-     */
     fun handleHumanTurn(position: Int): GameState {
-        if (gameState.board.isPositionAvailable(position) && !gameState.isFinished) {
-            // Pasamos el winningLength del modo actual a la lógica de movimiento
+        if (gameState.board.isPositionAvailable(position) && !gameState.isFinished && gameState.currentPlayer == Player.Human) {
             gameState = gameState.move(position, Player.Human, currentGameMode.winningLength)
         }
         return gameState
     }
 
-    /**
-     * Maneja el turno de la IA.
-     */
     suspend fun handleAiTurn(): GameState {
         if (gameState.isFinished || gameState.currentPlayer != Player.AI) {
             return gameState
@@ -58,8 +52,6 @@ class TicTacToeGameService @Inject constructor(
         val moveIndex = aiEngineRepository.getNextMove(
             board = gameState.board,
             currentMood = currentMood ?: Mood.getDefaultDailyMood()
-            // Nota: Para Gomoku, aquí habría que pasar el modo a la IA también,
-            // pero por ahora asumimos que getNextMove maneja la lógica interna o solo Q-Learning básico
         )
 
         if (moveIndex != null && gameState.board.isPositionAvailable(moveIndex)) {
@@ -70,18 +62,22 @@ class TicTacToeGameService @Inject constructor(
     }
 
     /**
-     * Reinicia el juego usando el tamaño del tablero del modo actual.
+     * Reinicia el tablero y decide aleatoriamente quién empieza.
+     * NO hace el movimiento de la IA, solo prepara el estado.
      */
-    fun resetGame() {
-        // Creamos un tablero vacío del tamaño correcto (3x3 o 9x9)
+    suspend fun resetGame() {
         val emptyBoard = Board(size = currentGameMode.boardSize)
+
+        // Decisión aleatoria 50/50
+        val startingPlayer = if (Random.nextBoolean()) Player.Human else Player.AI
 
         gameState = GameState(
             board = emptyBoard,
-            currentPlayer = Player.Human,
+            currentPlayer = startingPlayer,
             result = GameResult.Playing,
             gameHistory = listOf(emptyBoard)
         )
+        // Aquí NO llamamos a handleAiTurn. Dejamos que el ViewModel lo orqueste.
     }
 
     fun getCurrentGameMode() = currentGameMode

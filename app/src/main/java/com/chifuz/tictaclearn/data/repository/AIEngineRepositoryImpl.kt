@@ -74,8 +74,9 @@ class AIEngineRepositoryImpl @Inject constructor(
             // --- GOMOKU (MINIMAX CON ALPHA-BETA) ---
             findBestGomokuMove(board, currentMood.minimaxDepth, currentMood.gomokuExplorationRate)
         } else {
-            // --- CLÁSICO (Q-LEARNING) ---
-            findBestClassicMove(board, currentMood.epsilon)
+            // --- CLÁSICO (Q-LEARNING + MODO DESPIADADO) ---
+            // 🚨 CAMBIO: Pasamos el objeto Mood completo
+            findBestClassicMove(board, currentMood)
         }
     }
 
@@ -225,23 +226,68 @@ class AIEngineRepositoryImpl @Inject constructor(
     }
 
 
-    // --- LÓGICA Q-LEARNING (CLÁSICO 3x3) ---
+    // --- LÓGICA CLÁSICA (3x3) CON MODIFICACIÓN DESPIADADA ---
 
-    private fun findBestClassicMove(board: Board, epsilon: Double): Int? {
+    private fun findBestClassicMove(board: Board, mood: Mood): Int? {
         val availableMoves = board.getAvailablePositions()
         if (availableMoves.isEmpty()) return null
 
+        // --- 1. MODO DESPIADADO (RUTHLESS MODE) ---
+        // Probabilidad de activar la "IA Perfecta/Asesina" para este turno.
+        val ruthlessChance = when (mood.id) {
+            "somnoliento" -> 0.20
+            "relajado" -> 0.30
+            "normal" -> 0.40
+            "atento" -> 0.60
+            "concentrado" -> 0.80 // Asumimos que el nivel más alto es Concentrado
+            else -> 0.40
+        }
+
+        if (random.nextDouble() < ruthlessChance) {
+            // A. Instinto Asesino: Si puedo ganar YA, gano.
+            val winningMove = findCriticalMove(board, Player.AI, 3)
+            if (winningMove != null) {
+                Log.d(TAG, "Classic: Modo Despiadado activado (WIN) en ${mood.id}")
+                return winningMove
+            }
+
+            // B. Instinto de Supervivencia: Si el humano va a ganar, bloqueo.
+            val blockingMove = findCriticalMove(board, Player.Human, 3)
+            if (blockingMove != null) {
+                Log.d(TAG, "Classic: Modo Despiadado activado (BLOCK) en ${mood.id}")
+                return blockingMove
+            }
+        }
+
+        // --- 2. LÓGICA Q-LEARNING ORIGINAL (Si no se activó lo anterior) ---
         val state = boardToState(board)
         val qValues = qTable[state] ?: getHeuristicQValues(state)
         val bestAction = qValues.withIndex()
             .filter { it.index in availableMoves }
             .maxByOrNull { it.value }
 
-        return if (random.nextDouble() < epsilon) {
+        // Aquí usamos mood.epsilon como antes para la exploración vs memoria
+        return if (random.nextDouble() < mood.epsilon) {
             availableMoves.random(random)
         } else {
             bestAction?.index ?: availableMoves.random(random)
         }
+    }
+
+    /**
+     * Helper para el modo despiadado.
+     * Busca si hay un movimiento que resulte en victoria inmediata para [player].
+     */
+    private fun findCriticalMove(board: Board, player: Player, winningLength: Int): Int? {
+        val availableMoves = board.getAvailablePositions()
+        for (move in availableMoves) {
+            val simulatedBoard = board.simulateMove(move, player.symbol)
+            val result = simulatedBoard.checkGameResult(winningLength)
+            if (result is GameResult.Win && result.winner == player) {
+                return move
+            }
+        }
+        return null
     }
 
     private fun getHeuristicQValues(state: String): List<Double> {
