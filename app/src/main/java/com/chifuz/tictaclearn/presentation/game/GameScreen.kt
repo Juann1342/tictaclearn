@@ -38,7 +38,12 @@ fun GameScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { GameTopBar(currentMood = uiState.currentMood) },
+        topBar = {
+            GameTopBar(
+                currentMood = uiState.currentMood,
+                currentGameMode = uiState.currentGameMode
+            )
+        },
         containerColor = BackgroundDark // Fondo oscuro
     ) { paddingValues ->
         Column(
@@ -52,7 +57,11 @@ fun GameScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // 1. Indicador de estado
-            GameStatusCardWrapper(uiState.gameState)
+            GameStatusCardWrapper(
+                gameState = uiState.gameState,
+                isAiThinking = uiState.isProcessingMove,
+                currentGameMode = uiState.currentGameMode // Pasando el modo de juego
+            )
 
             // 2. Tablero Dinámico
             Box(
@@ -100,21 +109,20 @@ fun GameScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
-                    // 🚨 CAMBIO UI: Botón Reiniciar con Icono
+                    // Botón Reiniciar
                     Button(
                         onClick = viewModel::onResetGameClicked,
                         enabled = !uiState.isProcessingMove,
                         modifier = Modifier
-                            .fillMaxWidth(0.9f) // Ajuste de ancho
-                            .height(56.dp), // Altura estándar
-                        shape = RoundedCornerShape(12.dp), // Bordes menos redondeados
+                            .fillMaxWidth(0.9f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = NeonOrange)
                     ) {
-                        // 🚨 IMPLEMENTACIÓN: Icono de Refresh
                         Icon(
                             imageVector = Icons.Filled.Refresh,
                             contentDescription = "Reiniciar",
-                            tint = BackgroundDark, // Icono oscuro sobre botón naranja
+                            tint = BackgroundDark,
                             modifier = Modifier.size(20.dp).padding(end = 6.dp)
                         )
                         Text(
@@ -126,15 +134,14 @@ fun GameScreen(
                     }
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // 🚨 NUEVO: Botón ABANDONAR PARTIDA (solo mientras juega)
+                    // Botón ABANDONAR PARTIDA
                     if (!uiState.gameState.isFinished) {
                         OutlinedButton(
-                            onClick = onGameFinished, // Navegar al menú al abandonar
+                            onClick = onGameFinished,
                             enabled = !uiState.isProcessingMove,
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
                                 .height(50.dp),
-                            // Usar NeonRed para el borde y texto (advertencia)
                             border = BorderStroke(1.dp, NeonRed.copy(alpha = 0.7f)),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonRed)
@@ -150,19 +157,16 @@ fun GameScreen(
                     }
 
                     if (uiState.gameState.isFinished) {
-
-                        // 🚨 Botón Volver al Menú (YA ESTÁ IMPLEMENTADO CON TU LÓGICA ORIGINAL)
+                        // Botón Volver al Menú
                         OutlinedButton(
                             onClick = onGameFinished,
                             modifier = Modifier
-                                .fillMaxWidth(0.9f) // Ajuste de ancho
+                                .fillMaxWidth(0.9f)
                                 .height(50.dp),
-                            // 🚨 AJUSTE: Borde más sutil y color TextWhite
                             border = BorderStroke(1.dp, TextWhite.copy(alpha = 0.5f)),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = TextWhite)
                         ) {
-                            // 🚨 IMPLEMENTACIÓN: Icono de Home
                             Icon(
                                 imageVector = Icons.Filled.Home,
                                 contentDescription = "Volver al menú",

@@ -13,6 +13,10 @@ val NeonCyan = Color(0xFF00E5FF)       // IA (O) - Acento Secundario
 val NeonGreen = Color(0xFF00E676)      // Éxito / Victoria Humana
 val NeonRed = Color(0xFFFF1744)        // Reset / Derrota IA
 
+// 🚨 AGREGADOS PARA PARTY MODE
+val NeonPurple = Color(0xFFD946EF)     // Jugador 3 (Triángulo)
+val NeonYellow = Color(0xFFFFD700)     // Jugador 4 (Estrella)
+
 // Textos (Usamos colores puros para alta legibilidad)
 val TextWhite = Color(0xFFF8FAFC)
 val TextGray = Color(0xFF94A3B8)

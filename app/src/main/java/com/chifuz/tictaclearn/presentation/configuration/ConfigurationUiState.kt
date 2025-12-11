@@ -24,6 +24,6 @@ data class ConfigurationUiState(
 ) {
     companion object {
         // 🚀 NUEVO: Constante para el entrenamiento 'ficticio' (50 partidas = 100%)
-        const val MAX_TRAINING_GAMES = 100
+        const val MAX_TRAINING_GAMES = 20
     }
 }

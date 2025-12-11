@@ -1,17 +1,28 @@
 package com.chifuz.tictaclearn.domain.model
 
+
+
 enum class Player(val symbol: Char) {
-    Human('X'),
-    AI('O');
+    Human('X'),      // Jugador 1
+    AI('O'),         // Jugador 2 (Puede ser Humano o IA)
+    Triangle('△'),   // Jugador 3
+    Star('☆');       // Jugador 4
 
     companion object {
         fun fromSymbol(symbol: Char): Player = entries.first { it.symbol == symbol }
     }
 
-    // 🚨 MEJORA UX/DOMINIO: Función para obtener al oponente, que causó el error en la UI.
+    // 🚨 MEJORA: Función 'next' que rota sobre la lista de jugadores activos
+    fun next(activePlayers: List<Player>): Player {
+        val currentIndex = activePlayers.indexOf(this)
+        if (currentIndex == -1) return activePlayers.first() // Fallback
+        return activePlayers[(currentIndex + 1) % activePlayers.size]
+    }
+
+    // Mantenemos 'other' por compatibilidad con código legacy (solo para 2 jugadores)
     fun other(): Player = when(this) {
         Human -> AI
-        AI -> Human
+        else -> Human
     }
 }
 
@@ -25,43 +36,36 @@ data class GameState(
     val board: Board,
     val currentPlayer: Player,
     val result: GameResult,
-    val gameHistory: List<Board>
+    val gameHistory: List<Board>,
+    // 🚨 NUEVO: Lista de jugadores en esta partida específica
+    val activePlayers: List<Player> = listOf(Player.Human, Player.AI)
 ) {
-    // Estado inicial estático (por defecto 3x3)
     companion object {
         fun initial() = GameState(
-            board = Board(3), // 3x3 por defecto
+            board = Board(3),
             currentPlayer = Player.Human,
             result = GameResult.Playing,
-            gameHistory = listOf(Board(3))
+            gameHistory = listOf(Board(3)),
+            activePlayers = listOf(Player.Human, Player.AI)
         )
     }
 
     val isFinished: Boolean
         get() = result != GameResult.Playing
 
-    /**
-     * ✅ CORRECCIÓN: 'move' ahora acepta 'winningLength' para validar la victoria correctamente.
-     */
     fun move(position: Int, player: Player, winningLength: Int): GameState {
         if (!board.isPositionAvailable(position)) return this
 
-        // 1. Crear nuevo tablero
         val newCells = board.cells.toMutableList().apply {
             this[position] = player.symbol
         }
-        // El tamaño se preserva implícitamente por la longitud de la lista
         val newBoard = Board(newCells)
-
-        // 2. Verificar resultado usando el largo de victoria dinámico (3 o 5)
         val newResult = newBoard.checkGameResult(winningLength)
 
-        // 3. Cambiar turno
         val gameIsOver = newResult != GameResult.Playing
-        // 🚨 CORRECCIÓN: Usa la nueva función other()
-        val nextPlayer = if (gameIsOver) player else player.other()
+        // 🚨 CAMBIO: Usamos activePlayers para decidir el siguiente turno
+        val nextPlayer = if (gameIsOver) player else player.next(activePlayers)
 
-        // 4. Actualizar historial
         val updatedHistory = gameHistory + newBoard
 
         return copy(

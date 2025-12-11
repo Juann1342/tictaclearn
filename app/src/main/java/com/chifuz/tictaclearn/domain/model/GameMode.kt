@@ -1,36 +1,23 @@
 package com.chifuz.tictaclearn.domain.model
 
-// domain/model/GameMode.kt
-
-/**
- * Define los modos de juego disponibles.
- */
 data class GameMode(
     val id: String,
     val displayName: String,
-    val boardSize: Int, // 3 para TicTacToe, 9 para Gomoku
-    val winningLength: Int // 3 para TicTacToe, 5 para Gomoku
+    val boardSize: Int,
+    val winningLength: Int
 ) {
     companion object {
-        // Modo 1: Tic-Tac-Toe 3x3 (Q-Learning)
-        val CLASSIC = GameMode(
-            id = "classic_3x3",
-            displayName = "Classic (3x3) - Q-Learning",
-            boardSize = 3,
-            winningLength = 3
-        )
+        val CLASSIC = GameMode("classic_3x3", "Classic (3x3)", 3, 3)
+        val GOMOKU = GameMode("gomoku_9x9", "Gomoku (9x9)", 9, 5)
 
-        // Modo 2: Gomoku / Five in a Row 9x9 (Minimax o Heurística)
-        val GOMOKU = GameMode(
-            id = "gomoku_9x9",
-            displayName = "Gomoku (9x9) - Minimax",
-            boardSize = 9,
-            winningLength = 5
-        )
+        // 🚨 NUEVO MODO
+        val PARTY = GameMode("gomoku_party", "Party PvP (9x9)", 9, 5)
 
-        val ALL_MODES = listOf(CLASSIC, GOMOKU)
+        val ALL_MODES = listOf(CLASSIC, GOMOKU, PARTY)
 
         fun fromId(id: String): GameMode? {
+            // Manejo especial para IDs compuestos del modo Party
+            if (id.startsWith("gomoku_party")) return PARTY
             return ALL_MODES.find { it.id == id }
         }
     }

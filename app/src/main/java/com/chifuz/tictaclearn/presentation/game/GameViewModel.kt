@@ -3,7 +3,10 @@ package com.chifuz.tictaclearn.presentation.game
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.chifuz.tictaclearn.domain.model.GameMode
+import com.chifuz.tictaclearn.domain.model.GameResult
 import com.chifuz.tictaclearn.domain.model.GameState
+import com.chifuz.tictaclearn.domain.model.Player
 import com.chifuz.tictaclearn.domain.repository.AIEngineRepository
 import com.chifuz.tictaclearn.domain.service.TicTacToeGameService
 import com.chifuz.tictaclearn.presentation.navigation.Screen
@@ -31,67 +34,84 @@ class GameViewModel @Inject constructor(
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
     init {
-        val moodId = savedStateHandle.get<String>(Screen.Game.MOOD_ID_KEY) ?: "normal"
-        val gameModeId = savedStateHandle.get<String>(Screen.Game.GAME_MODE_ID_KEY) ?: "classic_3x3"
-
-        initializeGame(moodId, gameModeId)
+        val moodId = savedStateHandle.get<String>(Screen.Game.MOOD_ID_KEY) ?: ""
+        val gameModeId = savedStateHandle.get<String>(Screen.Game.GAME_MODE_ID_KEY) ?: GameMode.CLASSIC.id
+        startGame(moodId, gameModeId)
     }
 
-    private fun initializeGame(moodId: String, gameModeId: String) {
+    private fun startGame(moodId: String, gameModeId: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isProcessingMove = true) }
-
-            // 1. Esperamos a que el servicio configure todo (suspend)
+            _uiState.update { it.copy(isLoading = true) }
             gameService.initializeGame(moodId, gameModeId)
-
-            // 2. Actualizamos la UI inmediatamente con el tablero VACÍO y el modo
             _uiState.update {
                 it.copy(
                     gameState = gameService.gameState,
-                    currentMood = gameService.currentMood,
-                    currentGameMode = gameService.getCurrentGameMode(),
-                    isProcessingMove = false
+                    currentMood = gameService.currentMood, // Agregar currentMood
+                    currentGameMode = gameService.getCurrentGameMode(), //  Modo de juego
+                    isLoading = false
                 )
             }
 
-            // 3. Comprobamos: ¿Le tocó empezar a la IA?
-            if (gameService.gameState.currentPlayer == com.chifuz.tictaclearn.domain.model.Player.AI) {
-                // Si sí, llamamos a la función que tiene el DELAY incorporado
+            // 3. Si la IA empieza, activamos su turno (solo en modos no-Party o si Party tiene IA)
+            val shouldAiMove = gameService.getCurrentGameMode() != GameMode.PARTY || gameService.isPartyModeAiEnabled
+            if (shouldAiMove && gameService.gameState.currentPlayer == Player.AI) {
                 handleAiTurn()
             }
         }
     }
 
     fun onCellClicked(position: Int) {
-        val currentState = _uiState.value
-        if (currentState.isProcessingMove || currentState.gameState.isFinished) return
-        if (currentState.gameState.currentPlayer != com.chifuz.tictaclearn.domain.model.Player.Human) return
+        if (_uiState.value.isProcessingMove) return
 
-        // 1. Turno Humano
-        val updatedState = gameService.handleHumanTurn(position)
-        _uiState.update { it.copy(gameState = updatedState) }
+        viewModelScope.launch {
+            // 1. Mover el humano (o cualquier jugador que toque)
+            val updatedState = gameService.handleHumanTurn(position)
 
-        if (!updatedState.isFinished) {
-            // 2. Turno IA
-            viewModelScope.launch {
-                handleAiTurn()
+            // Actualizar el estado (esto refresca la UI)
+            _uiState.update { it.copy(gameState = updatedState) }
+
+            // 2. Comprobar si es necesario llamar a la IA
+            if (updatedState.result == GameResult.Playing) {
+                // Esta lógica verifica si la IA está activa en el modo de juego actual.
+                val shouldAiMove = gameService.getCurrentGameMode() != GameMode.PARTY || gameService.isPartyModeAiEnabled
+
+                if (shouldAiMove && updatedState.currentPlayer == Player.AI) {
+                    // Si la IA juega, bloqueamos la UI y le damos el turno a la IA.
+                    handleAiTurn()
+                } else if (gameService.getCurrentGameMode() == GameMode.PARTY && updatedState.currentPlayer != Player.AI) {
+                    // Modo Party (PvP o PvPvAI): Si el turno NO es de la IA, el siguiente jugador es humano,
+                    // y el juego espera el siguiente clic.
+                }
+
+            } else {
+                performLearning(updatedState)
             }
-        } else {
-            performLearning(updatedState)
         }
     }
 
     private suspend fun handleAiTurn() {
+        // Bloqueamos la UI al inicio.
         _uiState.update { it.copy(isProcessingMove = true) }
 
-        // ⏳ EL DELAY MÁGICO: Aquí la IA "piensa" antes de poner la ficha
-        delay(AI_THINKING_DELAY)
+        try {
+            // ⏳ EL DELAY MÁGICO: Aquí la IA "piensa" antes de poner la ficha
+            delay(AI_THINKING_DELAY)
 
-        val state = gameService.handleAiTurn()
-        _uiState.update { it.copy(gameState = state, isProcessingMove = false) }
+            val state = gameService.handleAiTurn()
 
-        if (state.isFinished) {
-            performLearning(state)
+            // 1. Actualizamos el estado del juego (la IA movió)
+            _uiState.update { it.copy(gameState = state) }
+
+            if (state.isFinished) {
+                performLearning(state)
+            }
+        } catch (e: Exception) {
+            // Manejo de errores: Si la IA falla, simplemente se desbloquea la UI.
+            // El turno se quedará en Player.AI, forzando un reintento si el usuario toca.
+            // Para evitar que el juego se rompa por un error de AI.
+        } finally {
+            // 2. Desbloqueamos UI SIEMPRE, garantizando que el juego no se quede bloqueado.
+            _uiState.update { it.copy(isProcessingMove = false) }
         }
     }
 
@@ -118,10 +138,20 @@ class GameViewModel @Inject constructor(
                 )
             }
 
-            // 3. Si la suerte eligió a la IA, activamos su turno con delay
-            if (gameService.gameState.currentPlayer == com.chifuz.tictaclearn.domain.model.Player.AI) {
+            // 3. Si la suerte eligió a la IA, activamos su turno
+            val shouldAiMove = gameService.getCurrentGameMode() != GameMode.PARTY || gameService.isPartyModeAiEnabled
+            if (shouldAiMove && gameService.gameState.currentPlayer == Player.AI) {
                 handleAiTurn()
             }
         }
+    }
+
+    fun onGameFinished() {
+        // Esta función no necesita implementación aquí, se usa en la navegación de la UI
+    }
+
+    // Usamos el símbolo del jugador actual para el Tooltip
+    fun getPlayerMarker(): String {
+        return "Turno de ${uiState.value.gameState.currentPlayer.symbol}"
     }
 }

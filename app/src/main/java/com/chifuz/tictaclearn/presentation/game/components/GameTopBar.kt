@@ -6,14 +6,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import com.chifuz.tictaclearn.domain.model.Mood
+import com.chifuz.tictaclearn.domain.model.GameMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameTopBar(currentMood: Mood?) {
+fun GameTopBar(
+    currentMood: Mood?,
+    currentGameMode: GameMode
+) {
     TopAppBar(
         title = {
+            val titleText = if (currentGameMode == GameMode.PARTY) {
+                "MODO PARTY" //
+            } else {
+                "VS: ${currentMood?.displayName ?: "Cargando..."}"
+            }
             Text(
-                text = "VS: ${currentMood?.displayName ?: "Cargando..."}",
+                text = titleText,
                 style = MaterialTheme.typography.titleLarge
             )
         }
