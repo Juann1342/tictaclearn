@@ -114,7 +114,7 @@ class ConfigurationViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.saveDailyMood(mood)
-                Log.d(TAG, "Mood guardado: ${mood.displayName}")
+                Log.d(TAG, "Mood guardado: ${mood.displayNameRes}")
             } catch (e: Exception) {
                 Log.e(TAG, "Error guardando el mood", e)
             }

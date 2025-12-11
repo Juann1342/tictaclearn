@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TicTacLearn</string>
+
+    <string name="loading">加载中...</string>
+    <string name="vs_prefix">VS: %1$s</string>
+    <string name="party_mode_title">派对模式</string>
+
+    <string name="mode_classic_label">经典 (3x3)</string>
+    <string name="mode_gomoku_label">五子棋 (9x9)</string>
+    <string name="mode_party_chip">五子棋派对 (本地对战)</string>
+    <string name="game_mode_header">游戏模式</string>
+
+    <string name="threat_level_header">威胁等级</string>
+    <string name="btn_start_party">开始派对</string>
+    <string name="btn_start_challenge">开始挑战</string>
+    <string name="btn_reset_memory">重置AI记忆</string>
+
+    <string name="party_config_header">派对设置</string>
+    <string name="party_players_label">玩家人数: %1$d</string>
+    <string name="party_ai_player_label">玩家2是AI</string>
+
+    <string name="training_progress_label">训练进度 (Q-Learning)</string>
+    <string name="training_complete">100% (最佳状态!)</string>
+    <string name="training_games_count">已对局: %1$d / %2$d</string>
+
+    <string name="analysis_ai_header">AI 分析</string>
+    <string name="attr_mind_type">思维类型</string>
+    <string name="attr_mind_strategist">战略家 (极小化极大)</string>
+    <string name="attr_mind_adaptive">适应型 (Q-Learning)</string>
+    <string name="attr_fail_prob">失误概率</string>
+    <string name="attr_memory_power">记忆力 (1 - ε)</string>
+    <string name="attr_calc_power">计算力 (深度: %1$d)</string>
+
+    <string name="style_vision_future">预判能力</string>
+    <string name="style_q_learning">Q-Learning 风格</string>
+    <string name="style_turn_reactive">1步 (反应型)</string>
+    <string name="style_turn_planner">2步 (规划型)</string>
+    <string name="style_turn_strategic">3步 (战略型)</string>
+    <string name="style_erratic">不稳定</string>
+    <string name="style_balanced">平衡</string>
+    <string name="style_master">大师</string>
+    <string name="style_config_error">配置错误</string>
+
+    <string name="status_ai_thinking">AI 思考中...</string>
+    <string name="status_turn_human">你的回合</string>
+    <string name="status_turn_ai">AI 的回合</string>
+    <string name="status_turn_generic">%1$s 的回合</string>
+    <string name="status_draw">平局!</string>
+    <string name="status_winner">%1$s 获胜!</string>
+    <string name="status_learn_msg">向你的对手学习!</string>
+    <string name="btn_restart_game">重新开始</string>
+    <string name="btn_abandon_game">退出游戏</string>
+    <string name="btn_back_menu">返回菜单</string>
+
+    <string name="mood_sleepy_name">困倦</string>
+    <string name="mood_sleepy_desc">几乎随机下棋。适合初学者学习。</string>
+    <string name="mood_relaxed_name">放松</string>
+    <string name="mood_relaxed_desc">经常犯错，但会尝试进攻。</string>
+    <string name="mood_normal_name">普通</string>
+    <string name="mood_normal_desc">平衡的挑战。偶尔会分心。</string>
+    <string name="mood_attentive_name">专注</string>
+    <string name="mood_attentive_desc">认真对待。极少犯低级错误。</string>
+    <string name="mood_concentrated_name">集中</string>
+    <string name="mood_concentrated_desc">无敌状态。发挥全部潜能。</string>
+
+    <string name="mood_gomoku_easy_name">五子棋 新手</string>
+    <string name="mood_gomoku_easy_desc">搜索深度1。经常失误。</string>
+    <string name="mood_gomoku_medium_name">五子棋 中级</string>
+    <string name="mood_gomoku_medium_desc">搜索深度2。有战略眼光，但容易中陷阱。</string>
+    <string name="mood_gomoku_hard_name">五子棋 专家</string>
+    <string name="mood_gomoku_hard_desc">搜索深度3。追求最优解，几乎不犯错。</string>
+
+    <string name="persona_max_concentration">最大专注力。</string>
+    <string name="persona_distracted_calc">粗心的计算器。</string>
+    <string name="persona_calc_sometimes_distracted">偶尔分心的计算器。</string>
+    <string name="persona_distracted_experimental">分心且爱实验。</string>
+    <string name="persona_memory_play">凭记忆下棋。</string>
+    <string name="persona_worthy_rival">可敬的对手。</string>
+</resources>

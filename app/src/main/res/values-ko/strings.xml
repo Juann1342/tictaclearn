@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TicTacLearn</string>
+
+    <string name="loading">로딩 중...</string>
+    <string name="vs_prefix">VS: %1$s</string>
+    <string name="party_mode_title">파티 모드</string>
+
+    <string name="mode_classic_label">클래식 (3x3)</string>
+    <string name="mode_gomoku_label">오목 (9x9)</string>
+    <string name="mode_party_chip">오목 파티 (로컬 대전)</string>
+    <string name="game_mode_header">게임 모드</string>
+
+    <string name="threat_level_header">위협 수준</string>
+    <string name="btn_start_party">파티 시작</string>
+    <string name="btn_start_challenge">도전 시작</string>
+    <string name="btn_reset_memory">AI 메모리 초기화</string>
+
+    <string name="party_config_header">파티 설정</string>
+    <string name="party_players_label">플레이어: %1$d명</string>
+    <string name="party_ai_player_label">플레이어 2는 AI</string>
+
+    <string name="training_progress_label">학습 진행도 (Q-Learning)</string>
+    <string name="training_complete">100% (최적!)</string>
+    <string name="training_games_count">플레이 횟수: %1$d / %2$d</string>
+
+    <string name="analysis_ai_header">AI 분석</string>
+    <string name="attr_mind_type">사고 유형</string>
+    <string name="attr_mind_strategist">전략가 (Minimax)</string>
+    <string name="attr_mind_adaptive">적응형 (Q-Learning)</string>
+    <string name="attr_fail_prob">실수 확률</string>
+    <string name="attr_memory_power">기억력 (1 - ε)</string>
+    <string name="attr_calc_power">연산력 (깊이: %1$d)</string>
+
+    <string name="style_vision_future">수읽기 능력</string>
+    <string name="style_q_learning">Q-Learning 스타일</string>
+    <string name="style_turn_reactive">1수 앞 (반응형)</string>
+    <string name="style_turn_planner">2수 앞 (계획형)</string>
+    <string name="style_turn_strategic">3수 앞 (전략형)</string>
+    <string name="style_erratic">변덕스러움</string>
+    <string name="style_balanced">균형 잡힘</string>
+    <string name="style_master">마스터</string>
+    <string name="style_config_error">설정 오류</string>
+
+    <string name="status_ai_thinking">AI 생각 중...</string>
+    <string name="status_turn_human">당신의 차례</string>
+    <string name="status_turn_ai">AI의 차례</string>
+    <string name="status_turn_generic">%1$s의 차례</string>
+    <string name="status_draw">무승부!</string>
+    <string name="status_winner">%1$s 승리!</string>
+    <string name="status_learn_msg">상대에게서 배우세요!</string>
+    <string name="btn_restart_game">재시작</string>
+    <string name="btn_abandon_game">나가기</string>
+    <string name="btn_back_menu">메뉴로 이동</string>
+
+    <string name="mood_sleepy_name">졸림</string>
+    <string name="mood_sleepy_desc">거의 무작위로 둡니다. 연습용으로 좋습니다.</string>
+    <string name="mood_relaxed_name">편안함</string>
+    <string name="mood_relaxed_desc">자주 실수하지만 이기려 노력합니다.</string>
+    <string name="mood_normal_name">보통</string>
+    <string name="mood_normal_desc">적당한 난이도입니다. 가끔 딴생각을 합니다.</string>
+    <string name="mood_attentive_name">주의 깊음</string>
+    <string name="mood_attentive_desc">진지하게 둡니다. 단순한 실수는 거의 없습니다.</string>
+    <string name="mood_concentrated_name">집중</string>
+    <string name="mood_concentrated_desc">무적. 전력을 다해 승리하려 합니다.</string>
+
+    <string name="mood_gomoku_easy_name">오목 초보</string>
+    <string name="mood_gomoku_easy_desc">수읽기 깊이 1. 실수가 많습니다.</string>
+    <string name="mood_gomoku_medium_name">오목 중급</string>
+    <string name="mood_gomoku_medium_desc">수읽기 깊이 2. 전략적이지만 함정에 빠질 수 있습니다.</string>
+    <string name="mood_gomoku_hard_name">오목 고수</string>
+    <string name="mood_gomoku_hard_desc">수읽기 깊이 3. 최선의 수를 찾습니다. 거의 완벽합니다.</string>
+
+    <string name="persona_max_concentration">최대 집중력.</string>
+    <string name="persona_distracted_calc">산만한 계산기.</string>
+    <string name="persona_calc_sometimes_distracted">가끔 산만한 계산기.</string>
+    <string name="persona_distracted_experimental">산만하고 실험적임.</string>
+    <string name="persona_memory_play">기억에 의존.</string>
+    <string name="persona_worthy_rival">훌륭한 라이벌.</string>
+</resources>

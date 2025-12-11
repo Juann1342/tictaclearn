@@ -8,10 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.chifuz.tictaclearn.R
 import com.chifuz.tictaclearn.domain.model.GameResult
 import com.chifuz.tictaclearn.presentation.game.components.GameBoard
 import com.chifuz.tictaclearn.presentation.game.components.GameStatusCardWrapper
@@ -26,7 +28,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.ExitToApp
-
 
 @Composable
 fun GameScreen(
@@ -44,7 +45,7 @@ fun GameScreen(
                 currentGameMode = uiState.currentGameMode
             )
         },
-        containerColor = BackgroundDark // Fondo oscuro
+        containerColor = BackgroundDark
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -60,7 +61,7 @@ fun GameScreen(
             GameStatusCardWrapper(
                 gameState = uiState.gameState,
                 isAiThinking = uiState.isProcessingMove,
-                currentGameMode = uiState.currentGameMode // Pasando el modo de juego
+                currentGameMode = uiState.currentGameMode
             )
 
             // 2. Tablero Dinámico
@@ -82,7 +83,6 @@ fun GameScreen(
 
             // 3. Área de Controles
             Box(
-                // Altura dinámica para evitar saltos de layout
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(140.dp)
@@ -90,7 +90,6 @@ fun GameScreen(
                     .padding(bottom = 8.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
-                // Barra de Progreso
                 if (uiState.isProcessingMove) {
                     LinearProgressIndicator(
                         modifier = Modifier
@@ -101,7 +100,6 @@ fun GameScreen(
                     )
                 }
 
-                // Controles y Botones
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -109,7 +107,6 @@ fun GameScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
-                    // Botón Reiniciar
                     Button(
                         onClick = viewModel::onResetGameClicked,
                         enabled = !uiState.isProcessingMove,
@@ -121,12 +118,12 @@ fun GameScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Reiniciar",
+                            contentDescription = null,
                             tint = BackgroundDark,
                             modifier = Modifier.size(20.dp).padding(end = 6.dp)
                         )
                         Text(
-                            "REINICIAR PARTIDA",
+                            stringResource(R.string.btn_restart_game),
                             fontWeight = FontWeight.Black,
                             color = BackgroundDark,
                             fontSize = 16.sp
@@ -134,7 +131,6 @@ fun GameScreen(
                     }
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Botón ABANDONAR PARTIDA
                     if (!uiState.gameState.isFinished) {
                         OutlinedButton(
                             onClick = onGameFinished,
@@ -148,16 +144,15 @@ fun GameScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.ExitToApp,
-                                contentDescription = "Abandonar partida",
+                                contentDescription = null,
                                 tint = NeonRed,
                                 modifier = Modifier.size(20.dp).padding(end = 6.dp)
                             )
-                            Text("ABANDONAR PARTIDA", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(stringResource(R.string.btn_abandon_game), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
                     }
 
                     if (uiState.gameState.isFinished) {
-                        // Botón Volver al Menú
                         OutlinedButton(
                             onClick = onGameFinished,
                             modifier = Modifier
@@ -169,11 +164,11 @@ fun GameScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Home,
-                                contentDescription = "Volver al menú",
+                                contentDescription = null,
                                 tint = TextWhite,
                                 modifier = Modifier.size(20.dp).padding(end = 6.dp)
                             )
-                            Text("VOLVER AL MENÚ", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(stringResource(R.string.btn_back_menu), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
                     }
                 }

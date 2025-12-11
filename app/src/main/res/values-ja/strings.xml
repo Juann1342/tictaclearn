@@ -1,0 +1,79 @@
+<resources>
+    <string name="app_name">TicTacLearn</string>
+
+    <string name="loading">読み込み中...</string>
+    <string name="vs_prefix">VS: %1$s</string>
+    <string name="party_mode_title">パーティーモード</string>
+
+    <string name="mode_classic_label">クラシック (3x3)</string>
+    <string name="mode_gomoku_label">五目並べ (9x9)</string>
+    <string name="mode_party_chip">五目パーティー (対戦)</string>
+    <string name="game_mode_header">ゲームモード</string>
+
+    <string name="threat_level_header">脅威レベル</string>
+    <string name="btn_start_party">パーティー開始</string>
+    <string name="btn_start_challenge">挑戦開始</string>
+    <string name="btn_reset_memory">AIメモリをリセット</string>
+
+    <string name="party_config_header">パーティー設定</string>
+    <string name="party_players_label">プレイヤー: %1$d人</string>
+    <string name="party_ai_player_label">プレイヤー2はAI</string>
+
+    <string name="training_progress_label">学習進捗 (Q学習)</string>
+    <string name="training_complete">100% (最適!)</string>
+    <string name="training_games_count">対戦数: %1$d / %2$d</string>
+
+    <string name="analysis_ai_header">AI分析</string>
+    <string name="attr_mind_type">思考タイプ</string>
+    <string name="attr_mind_strategist">戦略家 (ミニマックス)</string>
+    <string name="attr_mind_adaptive">適応型 (Q学習)</string>
+    <string name="attr_fail_prob">ミス確率 (探索率)</string>
+    <string name="attr_memory_power">記憶力 (1 - ε)</string>
+    <string name="attr_calc_power">計算力 (深さ: %1$d)</string>
+
+    <string name="style_vision_future">先読み</string>
+    <string name="style_q_learning">Q学習スタイル</string>
+    <string name="style_turn_reactive">1手先 (反応型)</string>
+    <string name="style_turn_planner">2手先 (計画型)</string>
+    <string name="style_turn_strategic">3手先 (戦略型)</string>
+    <string name="style_erratic">気まぐれ</string>
+    <string name="style_balanced">バランス</string>
+    <string name="style_master">達人</string>
+    <string name="style_config_error">設定エラー</string>
+
+    <string name="status_ai_thinking">AI思考中...</string>
+    <string name="status_turn_human">あなたの番</string>
+    <string name="status_turn_ai">AIの番</string>
+    <string name="status_turn_generic">%1$s の番</string>
+    <string name="status_draw">引き分け!</string>
+    <string name="status_winner">%1$s の勝利!</string>
+    <string name="status_learn_msg">ライバルから学ぼう!</string>
+    <string name="btn_restart_game">再戦する</string>
+    <string name="btn_abandon_game">ゲーム終了</string>
+    <string name="btn_back_menu">メニューへ戻る</string>
+
+    <string name="mood_sleepy_name">眠そう</string>
+    <string name="mood_sleepy_desc">ほぼランダムに打ちます。練習に最適。</string>
+    <string name="mood_relaxed_name">リラックス</string>
+    <string name="mood_relaxed_desc">よくミスをしますが、勝とうとします。</string>
+    <string name="mood_normal_name">普通</string>
+    <string name="mood_normal_desc">バランスの取れた強さ。時々油断します。</string>
+    <string name="mood_attentive_name">注意深い</string>
+    <string name="mood_attentive_desc">真剣に打ちます。単純なミスはしません。</string>
+    <string name="mood_concentrated_name">集中</string>
+    <string name="mood_concentrated_desc">無敵。全力で勝ちに来ます。</string>
+
+    <string name="mood_gomoku_easy_name">五目 初心者</string>
+    <string name="mood_gomoku_easy_desc">深さ1。よく間違えます。</string>
+    <string name="mood_gomoku_medium_name">五目 中級者</string>
+    <string name="mood_gomoku_medium_desc">深さ2。戦略的ですが、罠にかかります。</string>
+    <string name="mood_gomoku_hard_name">五目 上級者</string>
+    <string name="mood_gomoku_hard_desc">深さ3。最善手を打ちます。ほぼ間違えません。</string>
+
+    <string name="persona_max_concentration">最大集中。</string>
+    <string name="persona_distracted_calc">不注意な計算機。</string>
+    <string name="persona_calc_sometimes_distracted">時々不注意な計算機。</string>
+    <string name="persona_distracted_experimental">実験好き。</string>
+    <string name="persona_memory_play">記憶でプレイ。</string>
+    <string name="persona_worthy_rival">好敵手。</string>
+</resources>

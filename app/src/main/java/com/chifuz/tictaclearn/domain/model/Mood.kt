@@ -1,96 +1,85 @@
 package com.chifuz.tictaclearn.domain.model
 
+import com.chifuz.tictaclearn.R
+
 data class Mood(
     val id: String,
-    val displayName: String,
-    val description: String,
-    // Parámetro para Q-Learning (3x3): Probabilidad de movimiento aleatorio (0.0 a 1.0)
+    val displayNameRes: Int, // Cambiado a Resource ID
+    val descriptionRes: Int, // Cambiado a Resource ID
     val epsilon: Double,
-    // Parámetro para Minimax (9x9): Profundidad de búsqueda (0 para desactivado/Q-Learning)
     val minimaxDepth: Int = 0,
-    // Nuevo: Tasa de exploración (chance de moverse al azar) para Gomoku Minimax.
-    // Esto hace que la IA "falle" intencionalmente en los niveles más fáciles.
     val gomokuExplorationRate: Double = 0.0
 ) {
     companion object {
         // --- 3x3 CLASSIC MOODS (Q-Learning) ---
 
-        // NIVEL 1: Muy fácil
         val SOMNOLIENTO = Mood(
             id = "somnoliento",
-            displayName = "Somnoliento",
-            description = "Juega casi al azar. Ideal para aprender.",
+            displayNameRes = R.string.mood_sleepy_name,
+            descriptionRes = R.string.mood_sleepy_desc,
             epsilon = 0.8,
             minimaxDepth = 0
         )
 
-        // NIVEL 2: Fácil
         val RELAJADO = Mood(
             id = "relajado",
-            displayName = "Relajado",
-            description = "Comete errores frecuentes, pero intenta jugar.",
+            displayNameRes = R.string.mood_relaxed_name,
+            descriptionRes = R.string.mood_relaxed_desc,
             epsilon = 0.5,
             minimaxDepth = 0
         )
 
-        // NIVEL 3: Intermedio
         val NORMAL = Mood(
             id = "normal",
-            displayName = "Normal",
-            description = "Un reto equilibrado. A veces se despista.",
+            displayNameRes = R.string.mood_normal_name,
+            descriptionRes = R.string.mood_normal_desc,
             epsilon = 0.2,
             minimaxDepth = 0
         )
 
-        // NIVEL 4: Difícil
         val ATENTO = Mood(
             id = "atento",
-            displayName = "Atento",
-            description = "Juega serio. Rara vez comete errores simples.",
+            displayNameRes = R.string.mood_attentive_name,
+            descriptionRes = R.string.mood_attentive_desc,
             epsilon = 0.05,
             minimaxDepth = 0
         )
 
-        // NIVEL 5: Experto
         val CONCENTRADO = Mood(
             id = "concentrado",
-            displayName = "Concentrado",
-            description = "Invencible. Usa todo su potencial.",
+            displayNameRes = R.string.mood_concentrated_name,
+            descriptionRes = R.string.mood_concentrated_desc,
             epsilon = 0.0,
             minimaxDepth = 0
         )
 
         // --- 9x9 GOMOKU MOODS (Minimax) ---
-        // Usamos una profundidad máxima de 3 y controlamos la dificultad con la tasa de exploración.
 
-        // NIVEL 1: Novato (Más fácil de ganar)
         val GOMOKU_FACIL = Mood(
             id = "gomoku_facil",
-            displayName = "Gomoku Novato",
-            description = "Minimax a profundidad 1. Se equivoca mucho.",
+            displayNameRes = R.string.mood_gomoku_easy_name,
+            descriptionRes = R.string.mood_gomoku_easy_desc,
             epsilon = 0.0,
             minimaxDepth = 1,
-            gomokuExplorationRate = 0.3 // 30% de chance de hacer un movimiento aleatorio
+            gomokuExplorationRate = 0.3
         )
 
-        // NIVEL 2: Intermedio (Reto medio)
         val GOMOKU_MEDIO = Mood(
             id = "gomoku_medio",
-            displayName = "Gomoku Intermedio",
-            description = "Minimax a profundidad 2. Juega estratégicamente, pero es vulnerable a errores.",
+            displayNameRes = R.string.mood_gomoku_medium_name,
+            descriptionRes = R.string.mood_gomoku_medium_desc,
             epsilon = 0.0,
             minimaxDepth = 2,
-            gomokuExplorationRate = 0.15 // 15% de chance de hacer un movimiento aleatorio
+            gomokuExplorationRate = 0.15
         )
 
-        // NIVEL 3: Experto (Muy difícil de ganar)
         val GOMOKU_DIFICIL = Mood(
             id = "gomoku_dificil",
-            displayName = "Gomoku Experto",
-            description = "Minimax a profundidad 3. Utiliza su máximo potencial. Busca la victoria óptima, muy rara vez se equivoca",
+            displayNameRes = R.string.mood_gomoku_hard_name,
+            descriptionRes = R.string.mood_gomoku_hard_desc,
             epsilon = 0.0,
             minimaxDepth = 3,
-            gomokuExplorationRate = 0.005 // 0.5% de chance de hacer un movimiento aleatorio
+            gomokuExplorationRate = 0.005
         )
 
         val ALL_MOODS_CLASSIC = listOf(SOMNOLIENTO, RELAJADO, NORMAL, ATENTO, CONCENTRADO)
@@ -105,9 +94,6 @@ data class Mood(
             return ALL_MOODS.find { it.id == id }
         }
 
-        /**
-         * Retorna el Mood por defecto según el modo de juego.
-         */
         fun getDefaultMoodForMode(mode: GameMode): Mood {
             return when (mode) {
                 GameMode.CLASSIC -> NORMAL

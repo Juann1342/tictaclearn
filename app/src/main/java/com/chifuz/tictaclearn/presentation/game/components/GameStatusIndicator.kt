@@ -7,12 +7,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.chifuz.tictaclearn.ui.theme.NeonCyan
 import com.chifuz.tictaclearn.ui.theme.NeonRed
 import androidx.compose.ui.unit.sp
 import com.chifuz.tictaclearn.ui.theme.TextWhite
 import androidx.compose.ui.unit.dp
+import com.chifuz.tictaclearn.R
 import com.chifuz.tictaclearn.domain.model.GameMode
 import com.chifuz.tictaclearn.domain.model.GameResult
 import com.chifuz.tictaclearn.domain.model.GameState
@@ -24,40 +26,34 @@ import com.chifuz.tictaclearn.ui.theme.NeonOrange
 @Composable
 fun GameStatusIndicator(
     gameState: GameState,
-    isAiThinking: Boolean, // Estado de procesamiento de la IA
-    currentGameMode: GameMode, // Modo de juego actual
+    isAiThinking: Boolean,
+    currentGameMode: GameMode,
     modifier: Modifier = Modifier
 ) {
     val statusText = when (gameState.result) {
         GameResult.Playing -> {
-            // 1. Prioridad: ¿Está la IA pensando? (Aplica a todos los modos con IA)
             if (gameState.currentPlayer == Player.AI && isAiThinking) {
-                "IA PENSANDO..."
+                stringResource(R.string.status_ai_thinking)
             } else {
-                // 2. Si no está pensando, definimos el texto según el modo de juego
                 when (currentGameMode) {
                     GameMode.CLASSIC, GameMode.GOMOKU -> {
-                        // Modo Player vs AI (PvE): Usar "Humano" o "IA"
                         when (gameState.currentPlayer) {
-                            Player.Human -> "Turno de Humano" // 'X'
-                            Player.AI -> "Turno de IA"       // 'O' (Esperando handleAiTurn)
-                            // Otros jugadores no deberían aparecer aquí.
-                            else -> "Turno de ${gameState.currentPlayer.symbol}"
+                            Player.Human -> stringResource(R.string.status_turn_human)
+                            Player.AI -> stringResource(R.string.status_turn_ai)
+                            else -> stringResource(R.string.status_turn_generic, gameState.currentPlayer.symbol)
                         }
                     }
                     GameMode.PARTY -> {
-                        // Modo Party (PvP o PvPvAI): Usar el símbolo del jugador (X, O, △, ☆)
-                        "Turno de ${gameState.currentPlayer.symbol}"
+                        stringResource(R.string.status_turn_generic, gameState.currentPlayer.symbol)
                     }
-
-                    else -> {"Cargando..."}
+                    else -> stringResource(R.string.loading)
                 }
             }
         }
-        GameResult.Draw -> "¡EMPATE!"
+        GameResult.Draw -> stringResource(R.string.status_draw)
         is GameResult.Win -> {
             val winnerSymbol = gameState.result.winner.symbol
-            "¡${winnerSymbol} GANA LA PARTIDA!"
+            stringResource(R.string.status_winner, winnerSymbol)
         }
     }
 
@@ -92,7 +88,6 @@ fun GameStatusIndicator(
             }
         )
 
-        // Sub-texto para mostrar el símbolo (X, O, △, ☆)
         if (gameState.result == GameResult.Playing) {
             val (markerText, markerColor) = when (gameState.currentPlayer) {
                 Player.Human -> "(${Player.Human.symbol})" to NeonOrange
@@ -111,9 +106,8 @@ fun GameStatusIndicator(
                 modifier = Modifier.padding(top = 4.dp)
             )
         } else if (gameState.result is GameResult.Win && gameState.result.winner == Player.AI) {
-            // Mensaje de aprendizaje solo si la IA gana
             Text(
-                text = "¡APRENDE DE TU RIVAL!",
+                text = stringResource(R.string.status_learn_msg),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,

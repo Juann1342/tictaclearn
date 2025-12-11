@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.chifuz.tictaclearn.R
 import com.chifuz.tictaclearn.domain.model.Mood
 import com.chifuz.tictaclearn.domain.model.GameMode
 
@@ -17,9 +19,10 @@ fun GameTopBar(
     TopAppBar(
         title = {
             val titleText = if (currentGameMode == GameMode.PARTY) {
-                "MODO PARTY" //
+                stringResource(R.string.party_mode_title)
             } else {
-                "VS: ${currentMood?.displayName ?: "Cargando..."}"
+                val moodName = currentMood?.displayNameRes?.let { stringResource(it) } ?: stringResource(R.string.loading)
+                stringResource(R.string.vs_prefix, moodName)
             }
             Text(
                 text = titleText,

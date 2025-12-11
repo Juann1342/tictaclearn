@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TicTacLearn</string>
+
+    <string name="loading">Загрузка...</string>
+    <string name="vs_prefix">VS: %1$s</string>
+    <string name="party_mode_title">РЕЖИМ PARTY</string>
+
+    <string name="mode_classic_label">КЛАССИКА (3x3)</string>
+    <string name="mode_gomoku_label">ГОМОКУ (9x9)</string>
+    <string name="mode_party_chip">ГОМОКУ PARTY (PVP)</string>
+    <string name="game_mode_header">РЕЖИМ ИГРЫ</string>
+
+    <string name="threat_level_header">УРОВЕНЬ УГРОЗЫ</string>
+    <string name="btn_start_party">НАЧАТЬ PARTY</string>
+    <string name="btn_start_challenge">НАЧАТЬ ИГРУ</string>
+    <string name="btn_reset_memory">СБРОС ПАМЯТИ ИИ</string>
+
+    <string name="party_config_header">НАСТРОЙКИ PARTY</string>
+    <string name="party_players_label">Игроков: %1$d</string>
+    <string name="party_ai_player_label">Игрок 2 это ИИ</string>
+
+    <string name="training_progress_label">Прогресс обучения (Q-Learning)</string>
+    <string name="training_complete">100% (Оптимально!)</string>
+    <string name="training_games_count">Игр сыграно: %1$d / %2$d</string>
+
+    <string name="analysis_ai_header">АНАЛИЗ ИИ</string>
+    <string name="attr_mind_type">Тип мышления</string>
+    <string name="attr_mind_strategist">СТРАТЕГ (Минимакс)</string>
+    <string name="attr_mind_adaptive">АДАПТИВНЫЙ (Q-Learning)</string>
+    <string name="attr_fail_prob">Вероятность ошибки</string>
+    <string name="attr_memory_power">Сила памяти (1 - ε)</string>
+    <string name="attr_calc_power">Сила расчета (Глубина: %1$d)</string>
+
+    <string name="style_vision_future">Видение будущего</string>
+    <string name="style_q_learning">Стиль Q-Learning</string>
+    <string name="style_turn_reactive">1 Ход (Реактивный)</string>
+    <string name="style_turn_planner">2 Хода (Планировщик)</string>
+    <string name="style_turn_strategic">3 Хода (Стратег)</string>
+    <string name="style_erratic">Хаотичный</string>
+    <string name="style_balanced">Сбалансированный</string>
+    <string name="style_master">Мастер</string>
+    <string name="style_config_error">Ошибка конф.</string>
+
+    <string name="status_ai_thinking">ИИ ДУМАЕТ...</string>
+    <string name="status_turn_human">Ваш ход</string>
+    <string name="status_turn_ai">Ход ИИ</string>
+    <string name="status_turn_generic">Ход %1$s</string>
+    <string name="status_draw">НИЧЬЯ!</string>
+    <string name="status_winner">ПОБЕДА %1$s!</string>
+    <string name="status_learn_msg">УЧИСЬ У СОПЕРНИКА!</string>
+    <string name="btn_restart_game">РЕСТАРТ</string>
+    <string name="btn_abandon_game">ВЫЙТИ</string>
+    <string name="btn_back_menu">В МЕНЮ</string>
+
+    <string name="mood_sleepy_name">Сонный</string>
+    <string name="mood_sleepy_desc">Играет почти случайно. Идеально для обучения.</string>
+    <string name="mood_relaxed_name">Расслабленный</string>
+    <string name="mood_relaxed_desc">Часто ошибается, но пытается играть.</string>
+    <string name="mood_normal_name">Нормальный</string>
+    <string name="mood_normal_desc">Сбалансированный вызов. Иногда отвлекается.</string>
+    <string name="mood_attentive_name">Внимательный</string>
+    <string name="mood_attentive_desc">Играет серьезно. Редко делает простые ошибки.</string>
+    <string name="mood_concentrated_name">Сфокусированный</string>
+    <string name="mood_concentrated_desc">Непобедимый. Использует весь потенциал.</string>
+
+    <string name="mood_gomoku_easy_name">Гомоку Новичок</string>
+    <string name="mood_gomoku_easy_desc">Минимакс глубина 1. Часто ошибается.</string>
+    <string name="mood_gomoku_medium_name">Гомоку Средний</string>
+    <string name="mood_gomoku_medium_desc">Минимакс глубина 2. Играет стратегически, но попадает в ловушки.</string>
+    <string name="mood_gomoku_hard_name">Гомоку Эксперт</string>
+    <string name="mood_gomoku_hard_desc">Минимакс глубина 3. Максимальный потенциал. Редко ошибается.</string>
+
+    <string name="persona_max_concentration">Максимальная концентрация.</string>
+    <string name="persona_distracted_calc">Невнимательный калькулятор.</string>
+    <string name="persona_calc_sometimes_distracted">Калькулятор, иногда отвлекается.</string>
+    <string name="persona_distracted_experimental">Рассеянный экспериментатор.</string>
+    <string name="persona_memory_play">Играет по памяти.</string>
+    <string name="persona_worthy_rival">Достойный соперник.</string>
+</resources>

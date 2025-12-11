@@ -1,3 +1,79 @@
 <resources>
     <string name="app_name">TicTacLearn</string>
+
+    <string name="loading">Loading...</string>
+    <string name="vs_prefix">VS: %1$s</string>
+    <string name="party_mode_title">PARTY MODE</string>
+
+    <string name="mode_classic_label">CLASSIC (3x3)</string>
+    <string name="mode_gomoku_label">GOMOKU (9x9)</string>
+    <string name="mode_party_chip">GOMOKU PARTY (LOCAL PVP)</string>
+    <string name="game_mode_header">GAME MODE</string>
+
+    <string name="threat_level_header">THREAT LEVEL</string>
+    <string name="btn_start_party">START PARTY</string>
+    <string name="btn_start_challenge">START CHALLENGE</string>
+    <string name="btn_reset_memory">RESET AI MEMORY</string>
+
+    <string name="party_config_header">PARTY CONFIG</string>
+    <string name="party_players_label">Players: %1$d</string>
+    <string name="party_ai_player_label">Player 2 is AI</string>
+
+    <string name="training_progress_label">Training Progress (Q-Learning)</string>
+    <string name="training_complete">100% (Optimal!)</string>
+    <string name="training_games_count">Games played: %1$d / %2$d</string>
+
+    <string name="analysis_ai_header">AI ANALYSIS</string>
+    <string name="attr_mind_type">Mind Type</string>
+    <string name="attr_mind_strategist">STRATEGIST (Minimax)</string>
+    <string name="attr_mind_adaptive">ADAPTIVE (Q-Learning)</string>
+    <string name="attr_fail_prob">Error Probability (Exploration)</string>
+    <string name="attr_memory_power">Memory Power (1 - ε)</string>
+    <string name="attr_calc_power">Calculation Power (Depth: %1$d)</string>
+
+    <string name="style_vision_future">Future Vision</string>
+    <string name="style_q_learning">Q-Learning Style</string>
+    <string name="style_turn_reactive">1 Turn (Reactive)</string>
+    <string name="style_turn_planner">2 Turns (Planner)</string>
+    <string name="style_turn_strategic">3 Turns (Strategic)</string>
+    <string name="style_erratic">Erratic</string>
+    <string name="style_balanced">Balanced</string>
+    <string name="style_master">Master</string>
+    <string name="style_config_error">Config Error</string>
+
+    <string name="status_ai_thinking">AI THINKING...</string>
+    <string name="status_turn_human">Human\'s Turn</string>
+    <string name="status_turn_ai">AI\'s Turn</string>
+    <string name="status_turn_generic">%1$s\'s Turn</string>
+    <string name="status_draw">DRAW!</string>
+    <string name="status_winner">NO. %1$s WINS!</string>
+    <string name="status_learn_msg">LEARN FROM YOUR RIVAL!</string>
+    <string name="btn_restart_game">RESTART GAME</string>
+    <string name="btn_abandon_game">QUIT GAME</string>
+    <string name="btn_back_menu">BACK TO MENU</string>
+
+    <string name="mood_sleepy_name">Sleepy</string>
+    <string name="mood_sleepy_desc">Plays almost randomly. Ideal for learning.</string>
+    <string name="mood_relaxed_name">Relaxed</string>
+    <string name="mood_relaxed_desc">Makes frequent mistakes, but tries to play.</string>
+    <string name="mood_normal_name">Normal</string>
+    <string name="mood_normal_desc">A balanced challenge. Sometimes gets distracted.</string>
+    <string name="mood_attentive_name">Attentive</string>
+    <string name="mood_attentive_desc">Plays seriously. Rarely makes simple errors.</string>
+    <string name="mood_concentrated_name">Focused</string>
+    <string name="mood_concentrated_desc">Invincible. Uses its full potential.</string>
+
+    <string name="mood_gomoku_easy_name">Gomoku Novice</string>
+    <string name="mood_gomoku_easy_desc">Minimax depth 1. Makes many mistakes.</string>
+    <string name="mood_gomoku_medium_name">Gomoku Intermediate</string>
+    <string name="mood_gomoku_medium_desc">Minimax depth 2. Plays strategically but is vulnerable to traps.</string>
+    <string name="mood_gomoku_hard_name">Gomoku Expert</string>
+    <string name="mood_gomoku_hard_desc">Minimax depth 3. Uses maximum potential. Seeks optimal victory, very rarely fails.</string>
+
+    <string name="persona_max_concentration">Maximum concentration.</string>
+    <string name="persona_distracted_calc">Very distracted calculator.</string>
+    <string name="persona_calc_sometimes_distracted">Calculator, sometimes distracted.</string>
+    <string name="persona_distracted_experimental">Distracted and experimental.</string>
+    <string name="persona_memory_play">Plays by memory.</string>
+    <string name="persona_worthy_rival">A worthy rival.</string>
 </resources>
