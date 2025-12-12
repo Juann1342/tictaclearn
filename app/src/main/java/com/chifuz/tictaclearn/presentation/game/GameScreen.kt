@@ -133,7 +133,10 @@ fun GameScreen(
 
                     if (!uiState.gameState.isFinished) {
                         OutlinedButton(
-                            onClick = onGameFinished,
+                            onClick = {
+                                viewModel.onUiClick()
+                                onGameFinished() // 🚨 CORRECCIÓN: Agregados los paréntesis ()
+                            },
                             enabled = !uiState.isProcessingMove,
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
@@ -154,7 +157,10 @@ fun GameScreen(
 
                     if (uiState.gameState.isFinished) {
                         OutlinedButton(
-                            onClick = onGameFinished,
+                            onClick = {
+                                viewModel.onUiClick()
+                                onGameFinished() // 🚨 CORRECCIÓN: Agregados los paréntesis ()
+                            },
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
                                 .height(50.dp),

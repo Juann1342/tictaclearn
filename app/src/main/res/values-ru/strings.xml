@@ -77,4 +77,12 @@
     <string name="persona_distracted_experimental">Рассеянный экспериментатор.</string>
     <string name="persona_memory_play">Играет по памяти.</string>
     <string name="persona_worthy_rival">Достойный соперник.</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="settings_sound">Звук</string>
+    <string name="settings_vibration">Вибрация</string>
+    <string name="btn_close">Закрыть</string>
+
+    <string name="feedback_memory_reset_success">✅ Память ИИ успешно очищена.</string>
+    <string name="feedback_memory_reset_error">❌ Ошибка очистки памяти.</string>
 </resources>

@@ -77,4 +77,12 @@
     <string name="persona_distracted_experimental">分心且爱实验。</string>
     <string name="persona_memory_play">凭记忆下棋。</string>
     <string name="persona_worthy_rival">可敬的对手。</string>
+
+    <string name="settings_title">设置</string>
+    <string name="settings_sound">声音</string>
+    <string name="settings_vibration">震动</string>
+    <string name="btn_close">关闭</string>
+
+    <string name="feedback_memory_reset_success">✅ AI记忆已成功清除。</string>
+    <string name="feedback_memory_reset_error">❌ 清除记忆时出错。</string>
 </resources>

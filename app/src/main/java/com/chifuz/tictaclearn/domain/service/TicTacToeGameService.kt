@@ -36,6 +36,7 @@ class TicTacToeGameService @Inject constructor(
             val parts = gameModeId.split("|")
             partyPlayersCount = parts.getOrNull(1)?.toIntOrNull() ?: 2
             isPartyModeAiEnabled = parts.getOrNull(2)?.toBooleanStrictOrNull() ?: false
+            currentGameMode = currentGameMode.copy(winningLength = 3) // Forzamos 3 en línea
         } else {
             currentGameMode = GameMode.fromId(gameModeId) ?: GameMode.CLASSIC
             isPartyModeAiEnabled = true // En Classic/Normal Gomoku, la IA (Player.AI) siempre es IA

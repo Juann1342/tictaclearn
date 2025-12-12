@@ -77,4 +77,12 @@
     <string name="persona_distracted_experimental">산만하고 실험적임.</string>
     <string name="persona_memory_play">기억에 의존.</string>
     <string name="persona_worthy_rival">훌륭한 라이벌.</string>
+
+    <string name="settings_title">설정</string>
+    <string name="settings_sound">소리</string>
+    <string name="settings_vibration">진동</string>
+    <string name="btn_close">닫기</string>
+
+    <string name="feedback_memory_reset_success">✅ AI 메모리가 성공적으로 삭제되었습니다。</string>
+    <string name="feedback_memory_reset_error">❌ 메모리 삭제 오류。</string>
 </resources>

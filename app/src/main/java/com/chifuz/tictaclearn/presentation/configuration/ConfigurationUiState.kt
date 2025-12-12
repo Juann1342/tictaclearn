@@ -13,7 +13,7 @@ data class ConfigurationUiState(
     val selectedGameMode: GameMode = GameMode.CLASSIC,
 
     // 3. Control de Eventos
-    val feedbackMessage: String? = null,
+    val feedbackMessage: Int? = null,
 
     // 4. Elementos de UI
     val availableMoods: List<Mood> = Mood.ALL_MOODS_CLASSIC,

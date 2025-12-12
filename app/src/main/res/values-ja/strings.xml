@@ -76,4 +76,12 @@
     <string name="persona_distracted_experimental">実験好き。</string>
     <string name="persona_memory_play">記憶でプレイ。</string>
     <string name="persona_worthy_rival">好敵手。</string>
+
+    <string name="settings_title">設定</string>
+    <string name="settings_sound">サウンド</string>
+    <string name="settings_vibration">バイブレーション</string>
+    <string name="btn_close">閉じる</string>
+
+    <string name="feedback_memory_reset_success">✅ AIメモリが正常に消去されました。</string>
+    <string name="feedback_memory_reset_error">❌ メモリ消去エラー。</string>
 </resources>

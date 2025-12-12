@@ -76,4 +76,13 @@
     <string name="persona_distracted_experimental">Distracted and experimental.</string>
     <string name="persona_memory_play">Plays by memory.</string>
     <string name="persona_worthy_rival">A worthy rival.</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_sound">Sound</string>
+    <string name="settings_vibration">Vibration</string>
+    <string name="btn_close">Close</string>
+
+    <string name="feedback_memory_reset_success">✅ AI memory cleared successfully.</string>
+    <string name="feedback_memory_reset_error">❌ Error clearing memory.</string>
+
 </resources>

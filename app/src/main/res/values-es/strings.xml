@@ -77,4 +77,12 @@
     <string name="persona_memory_play">Juega de memoria.</string>
     <string name="persona_worthy_rival">Un rival digno.</string>
 
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_sound">Sonido</string>
+    <string name="settings_vibration">Vibración</string>
+    <string name="btn_close">Cerrar</string>
+
+    <string name="feedback_memory_reset_success">✅ Memoria de la IA borrada con éxito.</string>
+    <string name="feedback_memory_reset_error">❌ Error al borrar la memoria.</string>
+
 </resources>

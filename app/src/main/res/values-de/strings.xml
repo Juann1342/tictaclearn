@@ -77,4 +77,12 @@
     <string name="persona_distracted_experimental">Abgelenkt und experimentierfreudig.</string>
     <string name="persona_memory_play">Spielt aus dem Gedächtnis.</string>
     <string name="persona_worthy_rival">Ein würdiger Rivale.</string>
+
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_sound">Ton</string>
+    <string name="settings_vibration">Vibration</string>
+    <string name="btn_close">Schließen</string>
+
+    <string name="feedback_memory_reset_success">✅ KI-Speicher erfolgreich gelöscht.</string>
+    <string name="feedback_memory_reset_error">❌ Fehler beim Löschen des Speichers.</string>
 </resources>

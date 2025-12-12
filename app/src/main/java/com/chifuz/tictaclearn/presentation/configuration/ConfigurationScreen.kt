@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.GridOn
@@ -44,12 +45,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chifuz.tictaclearn.R
 import com.chifuz.tictaclearn.domain.model.Mood
 import com.chifuz.tictaclearn.domain.model.GameMode
 import androidx.compose.ui.graphics.Shadow
+import com.chifuz.tictaclearn.presentation.configuration.components.SettingsDialog
 import com.chifuz.tictaclearn.ui.theme.BackgroundDark
 import com.chifuz.tictaclearn.ui.theme.NeonCyan
 import com.chifuz.tictaclearn.ui.theme.NeonGreen
@@ -77,6 +81,12 @@ fun ConfigurationScreen(
     viewModel: ConfigurationViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    // 🚀 Estados para Configuración
+    val isSoundEnabled by viewModel.isSoundEnabled.collectAsStateWithLifecycle()
+    val isVibrationEnabled by viewModel.isVibrationEnabled.collectAsStateWithLifecycle()
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     var partyPlayers by remember { mutableIntStateOf(2) }
@@ -103,193 +113,241 @@ fun ConfigurationScreen(
     }
 
     LaunchedEffect(uiState.feedbackMessage) {
-        uiState.feedbackMessage?.let { message ->
-            snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Short)
+        uiState.feedbackMessage?.let { messageResId -> // Ahora es un ID (Int)
+
+            // Usamos el contexto para obtener el String real desde el XML
+            val messageText = context.getString(messageResId)
+
+            snackbarHostState.showSnackbar(
+                message = messageText,
+                duration = SnackbarDuration.Short
+            )
             viewModel.feedbackShown()
         }
+    }
+
+    // 🚀 DIÁLOGO
+    if (showSettingsDialog) {
+        SettingsDialog(
+            onDismiss = { showSettingsDialog = false },
+            isSoundEnabled = isSoundEnabled,
+            onSoundToggle = viewModel::toggleSound,
+            isVibrationEnabled = isVibrationEnabled,
+            onVibrationToggle = viewModel::toggleVibration
+        )
     }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = BackgroundDark
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            // --- HEADER ---
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 40.dp, bottom = 20.dp)
-                    .graphicsLayer {
-                        translationY = entranceOffset.value
-                        alpha = entranceAlpha.value
-                    },
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        fontSize = 32.sp,
-                        letterSpacing = 2.sp,
-                        shadow = Shadow(
-                            color = NeonOrange.copy(alpha = 0.7f),
-                            offset = Offset(0f, 0f),
-                            blurRadius = 15f
-                        )
-                    ),
-                    color = NeonOrange,
-                )
-            }
 
-            // --- ZONA DE CONTROL ---
-
-            // 1. Selector de Modo
-            Text(
-                text = stringResource(R.string.game_mode_header),
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = TextGray,
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .graphicsLayer { alpha = entranceAlpha.value }
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-            GameModeSelectorV2(
-                currentMode = uiState.selectedGameMode,
-                onModeSelected = viewModel::onGameModeSelected,
-                modifier = Modifier
-                    .graphicsLayer { translationX = entranceOffset.value * 0.5f }
-                    .padding(horizontal = 24.dp)
-            )
-
-            // CONFIGURACIÓN EXTRA PARA PARTY MODE
-            AnimatedVisibility(visible = uiState.selectedGameMode == GameMode.PARTY) {
-                PartyModeConfigurator(
-                    players = partyPlayers,
-                    onPlayersChanged = { partyPlayers = it },
-                    aiEnabled = partyAiEnabled,
-                    onAiEnabledChanged = { partyAiEnabled = it }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Indicador de entrenamiento (solo para Classic)
-            AnimatedVisibility(visible = uiState.selectedGameMode == GameMode.CLASSIC) {
-                Box(
+                // --- HEADER ---
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .padding(horizontal = 24.dp)
+                        .padding(top = 40.dp, bottom = 20.dp)
+                        .graphicsLayer {
+                            translationY = entranceOffset.value
+                            alpha = entranceAlpha.value
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TrainingProgressIndicator(
-                        gamesPlayedCount = uiState.classicGamesPlayedCount,
-                        maxGames = ConfigurationUiState.MAX_TRAINING_GAMES
-                    )
-                }
-            }
-
-            // 2. Selector de Ánimo
-            AnimatedVisibility(visible = uiState.selectedGameMode != GameMode.PARTY) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = stringResource(R.string.threat_level_header),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = TextGray,
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp)
-                            .graphicsLayer { alpha = entranceAlpha.value }
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            fontSize = 32.sp,
+                            letterSpacing = 2.sp,
+                            shadow = Shadow(
+                                color = NeonOrange.copy(alpha = 0.7f),
+                                offset = Offset(0f, 0f),
+                                blurRadius = 15f
+                            )
+                        ),
+                        color = NeonOrange,
                     )
-
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(24.dp),
-                            color = NeonCyan
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        MoodSelector(
-                            currentMood = uiState.currentMood,
-                            availableMoods = uiState.availableMoods,
-                            onMoodSelected = viewModel::onMoodSelected,
-                            modifier = Modifier.graphicsLayer { translationX = entranceOffset.value * 0.8f }
-                        )
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        // 3. Tarjeta Principal
-                        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                            MoodDescriptionCard(uiState.currentMood)
-                        }
-                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(48.dp))
+                // --- ZONA DE CONTROL ---
 
-            // --- BOTONES DE ACCIÓN ---
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .graphicsLayer {
-                        translationY = entranceOffset.value
-                        alpha = entranceAlpha.value
-                    }
-            ) {
-                Button(
-                    onClick = {
-                        if (uiState.selectedGameMode == GameMode.PARTY) {
-                            val modeId = "gomoku_party|$partyPlayers|$partyAiEnabled"
-                            val moodId = if (partyAiEnabled) "gomoku_medio" else "normal"
-                            onStartGame(moodId, modeId)
-                        } else {
-                            onStartGame(uiState.currentMood.id, uiState.selectedGameMode.id)
-                        }
-                    },
-                    enabled = !uiState.isLoading,
+                // 1. Selector de Modo
+                Text(
+                    text = stringResource(R.string.game_mode_header),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = TextGray,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = NeonOrange)
-                ) {
-                    Text(
-                        if (uiState.selectedGameMode == GameMode.PARTY) stringResource(R.string.btn_start_party) else stringResource(R.string.btn_start_challenge),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 16.sp,
-                        color = BackgroundDark
+                        .padding(horizontal = 24.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .graphicsLayer { alpha = entranceAlpha.value }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                GameModeSelectorV2(
+                    currentMode = uiState.selectedGameMode,
+                    onModeSelected = viewModel::onGameModeSelected,
+                    modifier = Modifier
+                        .graphicsLayer { translationX = entranceOffset.value * 0.5f }
+                        .padding(horizontal = 24.dp)
+                )
+
+                // CONFIGURACIÓN EXTRA PARA PARTY MODE
+                AnimatedVisibility(visible = uiState.selectedGameMode == GameMode.PARTY) {
+                    PartyModeConfigurator(
+                        players = partyPlayers,
+                        onPlayersChanged = {
+                            viewModel.onUiClick()
+                            partyPlayers = it
+                        },
+                        aiEnabled = partyAiEnabled,
+                        onAiEnabledChanged = {
+                            viewModel.onUiClick()
+                            partyAiEnabled = it
+                        }
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // BOTÓN REINICIAR MEMORIA
+                // Indicador de entrenamiento (solo para Classic)
                 AnimatedVisibility(visible = uiState.selectedGameMode == GameMode.CLASSIC) {
-                    OutlinedButton(
-                        onClick = viewModel::onResetMemoryClicked,
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
-                        enabled = !uiState.isLoading,
-                        shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(1.dp, NeonRed.copy(alpha = 0.5f)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonRed)
+                            .padding(horizontal = 24.dp)
                     ) {
-                        Text(stringResource(R.string.btn_reset_memory), fontWeight = FontWeight.Bold)
+                        TrainingProgressIndicator(
+                            gamesPlayedCount = uiState.classicGamesPlayedCount,
+                            maxGames = ConfigurationUiState.MAX_TRAINING_GAMES
+                        )
                     }
                 }
+
+                // 2. Selector de Ánimo
+                AnimatedVisibility(visible = uiState.selectedGameMode != GameMode.PARTY) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = stringResource(R.string.threat_level_header),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = TextGray,
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp)
+                                .graphicsLayer { alpha = entranceAlpha.value }
+                        )
+
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.padding(24.dp),
+                                color = NeonCyan
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            MoodSelector(
+                                currentMood = uiState.currentMood,
+                                availableMoods = uiState.availableMoods,
+                                onMoodSelected = viewModel::onMoodSelected,
+                                modifier = Modifier.graphicsLayer { translationX = entranceOffset.value * 0.8f }
+                            )
+
+                            Spacer(modifier = Modifier.height(32.dp))
+
+                            // 3. Tarjeta Principal
+                            Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+                                MoodDescriptionCard(
+                                    mood = uiState.currentMood,
+                                    onExpandClick = { viewModel.onUiClick() } // Feedback al expandir
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(48.dp))
+
+                // --- BOTONES DE ACCIÓN ---
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .graphicsLayer {
+                            translationY = entranceOffset.value
+                            alpha = entranceAlpha.value
+                        }
+                ) {
+                    Button(
+                        onClick = {
+                            viewModel.onUiClick()
+                            if (uiState.selectedGameMode == GameMode.PARTY) {
+                                val modeId = "gomoku_party|$partyPlayers|$partyAiEnabled"
+                                val moodId = if (partyAiEnabled) "gomoku_medio" else "normal"
+                                onStartGame(moodId, modeId)
+                            } else {
+                                onStartGame(uiState.currentMood.id, uiState.selectedGameMode.id)
+                            }
+                        },
+                        enabled = !uiState.isLoading,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonOrange)
+                    ) {
+                        Text(
+                            if (uiState.selectedGameMode == GameMode.PARTY) stringResource(R.string.btn_start_party) else stringResource(R.string.btn_start_challenge),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 16.sp,
+                            color = BackgroundDark
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // BOTÓN REINICIAR MEMORIA
+                    AnimatedVisibility(visible = uiState.selectedGameMode == GameMode.CLASSIC) {
+                        OutlinedButton(
+                            onClick = viewModel::onResetMemoryClicked,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            enabled = !uiState.isLoading,
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, NeonRed.copy(alpha = 0.5f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonRed)
+                        ) {
+                            Text(stringResource(R.string.btn_reset_memory), fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            // 🚀 BOTÓN DE AJUSTES (Esquina superior derecha)
+            IconButton(
+                onClick = {
+                    viewModel.onUiClick()
+                    showSettingsDialog = true
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 40.dp, end = 16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Ajustes",
+                    tint = TextGray,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
     }
@@ -568,7 +626,10 @@ fun MoodSelector(
 }
 
 @Composable
-fun MoodDescriptionCard(mood: Mood) {
+fun MoodDescriptionCard(
+    mood: Mood,
+    onExpandClick: () -> Unit = {}
+) {
     var isExpanded by remember { mutableStateOf(false) }
     val (color, icon) = getMoodVisuals(mood.id)
 
@@ -579,7 +640,10 @@ fun MoodDescriptionCard(mood: Mood) {
         modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, SurfaceLight.copy(alpha = 0.3f), RoundedCornerShape(24.dp))
-            .clickable { isExpanded = !isExpanded }
+            .clickable {
+                onExpandClick()
+                isExpanded = !isExpanded
+            }
     ) {
         Column(
             modifier = Modifier

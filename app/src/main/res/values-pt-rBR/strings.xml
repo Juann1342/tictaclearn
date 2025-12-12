@@ -76,4 +76,12 @@
     <string name="persona_distracted_experimental">Distraída e experimental.</string>
     <string name="persona_memory_play">Joga de memória.</string>
     <string name="persona_worthy_rival">Um rival digno.</string>
+
+    <string name="settings_title">Configurações</string>
+    <string name="settings_sound">Som</string>
+    <string name="settings_vibration">Vibração</string>
+    <string name="btn_close">Fechar</string>
+
+    <string name="feedback_memory_reset_success">✅ Memória da IA limpa com sucesso.</string>
+    <string name="feedback_memory_reset_error">❌ Erro ao limpar memória.</string>
 </resources>

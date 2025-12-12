@@ -3,13 +3,20 @@ package com.chifuz.tictaclearn.presentation.configuration
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.chifuz.tictaclearn.R
+import com.chifuz.tictaclearn.data.datastore.MoodDataStoreManager
 import com.chifuz.tictaclearn.domain.model.Mood
 import com.chifuz.tictaclearn.domain.model.GameMode
 import com.chifuz.tictaclearn.domain.repository.AIEngineRepository
+import com.chifuz.tictaclearn.presentation.util.SoundManager
+import com.chifuz.tictaclearn.presentation.util.SoundType
+import com.chifuz.tictaclearn.presentation.util.VibrationManager // 🚨 Import necesario
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,54 +25,51 @@ private const val TAG = "ConfigViewModel"
 
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
-    private val repository: AIEngineRepository
+    private val repository: AIEngineRepository,
+    private val moodDataStoreManager: MoodDataStoreManager,
+    private val soundManager: SoundManager,
+    private val vibrationManager: VibrationManager // 🚨 Inyección del VibrationManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConfigurationUiState())
     val uiState: StateFlow<ConfigurationUiState> = _uiState.asStateFlow()
 
+    // 🚀 Flujos para la configuración
+    val isSoundEnabled = moodDataStoreManager.isSoundEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val isVibrationEnabled = moodDataStoreManager.isVibrationEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     init {
-        // Al inicio, cargamos los datos
         loadConfigData()
     }
 
-    // --- Lógica de Carga y Sincronización ---
-
-    /**
-     * 🚀 FUNCIÓN CRÍTICA: Carga todos los datos de configuración (Mood y Contador de partidas).
-     * Ahora es pública para que la UI la llame cuando la pantalla reaparece.
-     */
     fun loadConfigData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                // 1. Obtenemos el Mood guardado.
                 val savedMood = repository.getDailyMood()
-
-                // 2. 🚀 OBTENEMOS EL CONTADOR DE PARTIDAS, forzando la recarga desde el repositorio
                 val gamesPlayedCount = repository.getClassicGamesPlayedCount()
 
-                // 3. Determinar el GameMode asociado al Mood cargado.
                 val initialMode = if (Mood.ALL_MOODS_GOMOKU.any { it.id == savedMood.id }) {
                     GameMode.GOMOKU
                 } else {
                     GameMode.CLASSIC
                 }
 
-                // 4. Determinar la lista de Moods disponibles.
                 val availableMoods = if (initialMode == GameMode.GOMOKU) {
                     Mood.ALL_MOODS_GOMOKU
                 } else {
                     Mood.ALL_MOODS_CLASSIC
                 }
 
-                // 5. Actualizar el estado COMPLETO de la UI.
                 _uiState.update {
                     it.copy(
                         selectedGameMode = initialMode,
                         currentMood = savedMood,
                         availableMoods = availableMoods,
-                        classicGamesPlayedCount = gamesPlayedCount, // <-- ¡ASIGNACIÓN CORRECTA!
+                        classicGamesPlayedCount = gamesPlayedCount,
                         isLoading = false
                     )
                 }
@@ -76,13 +80,26 @@ class ConfigurationViewModel @Inject constructor(
         }
     }
 
+    // 🚀 Funciones para el Diálogo de Ajustes
+    fun toggleSound(enabled: Boolean) {
+        viewModelScope.launch { moodDataStoreManager.setSoundEnabled(enabled) }
+    }
 
-    /**
-     * Lógica para cambiar el Modo de Juego (Classic o Gomoku)
-     */
+    fun toggleVibration(enabled: Boolean) {
+        viewModelScope.launch { moodDataStoreManager.setVibrationEnabled(enabled) }
+    }
+
+    // 🚨 Función corregida para incluir vibración
+    fun onUiClick() {
+        soundManager.play(SoundType.CLICK)
+        vibrationManager.vibrateClick()
+    }
+
+    // --- Lógica de Negocio Original ---
+
     fun onGameModeSelected(mode: GameMode) {
+        onUiClick() // Sonido y Vibración
         val defaultMood = Mood.getDefaultMoodForMode(mode)
-
         val availableMoods = if (mode == GameMode.GOMOKU) {
             Mood.ALL_MOODS_GOMOKU
         } else {
@@ -106,34 +123,29 @@ class ConfigurationViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Lógica para cambiar el Estado de Ánimo (Mood)
-     */
     fun onMoodSelected(mood: Mood) {
+        onUiClick() // Sonido y Vibración
         _uiState.update { it.copy(currentMood = mood) }
         viewModelScope.launch {
             try {
                 repository.saveDailyMood(mood)
-                Log.d(TAG, "Mood guardado: ${mood.displayNameRes}")
             } catch (e: Exception) {
                 Log.e(TAG, "Error guardando el mood", e)
             }
         }
     }
 
-    /**
-     * Ejecuta el borrado de la Q-Table a través del repositorio.
-     */
     fun onResetMemoryClicked() {
+        onUiClick() // Sonido y Vibración
         Log.d(TAG, "Reset memory clicked.")
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                repository.clearMemory() // Borrar memoria de Q-Learning
+                repository.clearMemory()
                 _uiState.update {
                     it.copy(
-                        feedbackMessage = "✅ Memoria de la IA borrada con éxito.",
-                        classicGamesPlayedCount = 0, // 🚀 RESET DE LA UI
+                        feedbackMessage = R.string.feedback_memory_reset_success,
+                        classicGamesPlayedCount = 0,
                         isLoading = false
                     )
                 }
@@ -141,7 +153,7 @@ class ConfigurationViewModel @Inject constructor(
                 Log.e(TAG, "Error clearing QTable", e)
                 _uiState.update {
                     it.copy(
-                        feedbackMessage = "❌ Error al borrar la memoria.",
+                        feedbackMessage = R.string.feedback_memory_reset_error,
                         isLoading = false
                     )
                 }
